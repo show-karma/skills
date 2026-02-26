@@ -23,7 +23,6 @@ Ask the user for concrete examples of how the skill will be used:
 - "What would a user say that should trigger this skill?"
 - "What Karma-specific context does this need?" (grants, funding maps, ecosystem data)
 
-For Karma domain context, see [karma-context.md](references/karma-context.md).
 
 ## Step 2: Plan Reusable Contents
 
@@ -92,11 +91,7 @@ Consult these guides based on your skill's needs:
 2. Note struggles or inefficiencies
 3. Update SKILL.md or resources
 
-## Karma Domain Context
-
-For Karma-specific knowledge (platform overview, key repos, domain concepts, suggested skill categories), see [karma-context.md](references/karma-context.md).
-
 **Primary focus areas for skills:**
-- Grants management (Karma protocol, milestones, reporting)
+- Grants management (milestones, reporting)
 - Funding maps (cross-ecosystem funding flows)
 - Ecosystem growth (metrics, community health)
