@@ -97,6 +97,6 @@ Consult these guides based on your skill's needs:
 For Karma-specific knowledge (platform overview, key repos, domain concepts, suggested skill categories), see [karma-context.md](references/karma-context.md).
 
 **Primary focus areas for skills:**
-- Grants management (GAP protocol, milestones, reporting)
+- Grants management (Karma protocol, milestones, reporting)
 - Funding maps (cross-ecosystem funding flows)
 - Ecosystem growth (metrics, community health)

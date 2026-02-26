@@ -8,14 +8,12 @@
 
 | Repo | Description | Stack |
 |------|-------------|-------|
-| `backend-nestjs` | Main API backend | NestJS, TypeScript, PostgreSQL |
-| `frontend-nextjs` | Web application | Next.js, TypeScript, React |
-| `gap-contracts` | GAP protocol smart contracts | Solidity, Hardhat |
-| `warehouse` | Data indexing and aggregation | TypeScript |
+| `gap-app-v2` | Public-facing web application | Next.js, TypeScript, React |
+| `gap-indexer` | Data indexing and aggregation | TypeScript |
 
 ## Domain Concepts
 
-### GAP (Grants, Applications & Proposals)
+### Karma Grants
 
 The core protocol for onchain grants lifecycle management:
 
@@ -75,7 +73,7 @@ Skills for the Karma ecosystem should focus on these areas:
 - Ecosystem health reporting
 
 ### Data & Integration
-- GAP protocol data queries
+- Karma protocol data queries
 - Warehouse data extraction
 - Cross-chain data aggregation
 - API integration helpers
