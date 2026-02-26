@@ -6,13 +6,11 @@ If you discover a security vulnerability in this repository, please report it re
 
 **Do not open a public issue.**
 
-Instead, email **security@karmahq.xyz** with:
+Instead, use [GitHub's private vulnerability reporting](https://github.com/show-karma/skills/security/advisories/new) to submit a report with:
 
 - A description of the vulnerability
 - Steps to reproduce the issue
 - Any potential impact assessment
-
-We will acknowledge receipt within 48 hours and aim to provide a resolution timeline within 5 business days.
 
 ## Scope
 
