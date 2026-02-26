@@ -1,0 +1,19 @@
+{
+  "name": "@show-karma/skills",
+  "version": "0.1.0",
+  "description": "Claude Code skills for the Karma ecosystem — grants management, funding maps, and ecosystem growth tooling",
+  "private": true,
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/show-karma/skills.git"
+  },
+  "keywords": [
+    "claude-code",
+    "skills",
+    "karma",
+    "grants",
+    "funding-maps",
+    "ecosystem-growth"
+  ]
+}

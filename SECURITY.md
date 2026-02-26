@@ -1,0 +1,23 @@
+# Security Policy
+
+## Reporting a Vulnerability
+
+If you discover a security vulnerability in this repository, please report it responsibly.
+
+**Do not open a public issue.**
+
+Instead, email **security@karmahq.xyz** with:
+
+- A description of the vulnerability
+- Steps to reproduce the issue
+- Any potential impact assessment
+
+We will acknowledge receipt within 48 hours and aim to provide a resolution timeline within 5 business days.
+
+## Scope
+
+This policy covers the skills published in this repository and the skill-creator tooling. For vulnerabilities in the Karma platform itself, please refer to the main [Karma security policy](https://github.com/show-karma).
+
+## Supported Versions
+
+Only the latest version on the `main` branch is actively supported.
