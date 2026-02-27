@@ -83,10 +83,10 @@ Research, Tool
 
 | User says | Maps to |
 |-----------|---------|
-| "Ethereum programs" | `ecosystems=Ethereum` |
+| "Ethereum programs" | `ecosystems=Ethereum` (see Ecosystem Search Strategy below) |
 | "hackathons" | `type=hackathon` |
-| "hackathons on Ethereum" | `type=hackathon&ecosystems=Ethereum` |
-| "bounties on Solana" | `type=bounty&ecosystems=Solana` |
+| "hackathons on Ethereum" | `type=hackathon&ecosystems=Ethereum` (see Ecosystem Search Strategy below) |
+| "bounties on Solana" | `type=bounty&ecosystems=Solana` (see Ecosystem Search Strategy below) |
 | "bounties over $500" | `type=bounty&minGrantSize=500` |
 | "accelerator programs" | `type=accelerator` |
 | "VCs investing in DeFi" | `type=vc_fund&name=DeFi` |
@@ -106,6 +106,16 @@ Budget shorthand: K→000, M→000000 (e.g., $50K → 50000, $1M → 1000000).
 
 **URL encoding:** Values with spaces or special characters must be percent-encoded when building `curl` URLs (e.g., `categories=Retroactive%20Funding`, not `Retroactive Funding`). Most HTTP clients handle this automatically, but manual URL construction requires explicit encoding.
 
+## Ecosystem Search Strategy
+
+The `ecosystems` metadata field is often empty — many programs are linked to an ecosystem only via the `communities` field. When searching by ecosystem:
+
+1. **First query**: use `ecosystems={name}` as normal
+2. **If few or zero results**: run a second query with `name={ecosystem name}` to catch programs that mention the ecosystem in their title
+3. **Deduplicate** by `id` and merge results
+
+This ensures programs like "ProPGF Batch 2 - Pods Track" (linked to Filecoin only via `communities`, not `ecosystems`) are not missed.
+
 ## Query Defaults
 
 Always include:
@@ -123,6 +133,14 @@ Use `curl` via Bash to call the API. Build the URL from the mapped parameters:
 ```bash
 curl -s "https://gapapi.karmahq.xyz/v2/program-registry/search?isValid=accepted&limit=10&sortField=updatedAt&sortOrder=desc&ecosystems=Ethereum"
 ```
+
+For ecosystem searches, if the first query returns few or zero results, run a fallback:
+
+```bash
+curl -s "https://gapapi.karmahq.xyz/v2/program-registry/search?isValid=accepted&limit=10&sortField=updatedAt&sortOrder=desc&name=Filecoin"
+```
+
+Deduplicate by `id` before presenting results.
 
 Parse the JSON response and format results as described below.
 
@@ -177,7 +195,7 @@ Showing 10 of 42. Ask for more or narrow your search.
 
 | Scenario | Response |
 |----------|----------|
-| No results | "No programs found matching your criteria. Try broadening — remove type, ecosystem, or budget filters." |
+| No results | Try the ecosystem fallback query (see Ecosystem Search Strategy) before giving up. If still none: "No programs found matching your criteria. Try broadening — remove type, ecosystem, or budget filters." |
 | API error | "Could not reach the Karma API. Try again in a moment." |
 | No query | Ask: "What kind of funding are you looking for? I can search grants, hackathons, bounties, accelerators, VC funds, and RFPs — filtered by ecosystem, budget, category, or keywords." |
 | "more results" / "page 2" | Re-run with `page=2` |
