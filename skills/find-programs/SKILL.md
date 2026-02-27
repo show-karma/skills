@@ -110,21 +110,22 @@ Budget shorthand: K→000, M→000000 (e.g., $50K → 50000, $1M → 1000000).
 
 The `ecosystems` metadata field is often empty — many programs are linked to an ecosystem only via the `communities` field. When searching by ecosystem, run these queries in parallel and merge:
 
-1. **Community UID lookup** (most reliable): resolve the ecosystem name to a community UID via `GET /v2/communities/{slug}` (slug is lowercase, e.g., `filecoin`, `optimism`), then query with `communityUid={uid}`
-2. `ecosystems={name}` — matches programs with populated ecosystem metadata
-3. `name={name}` — catches programs that mention the ecosystem in their title
+1. **Community UID lookup**: fetch all communities from `GET /v2/communities?limit=100`, find the best match for the user's query by comparing against community names (case-insensitive, partial match), then query with `communityUid={uid}`
+2. **`ecosystems={name}`** — matches programs with populated ecosystem metadata
+3. **`name={name}`** — text search on title, universal fallback
 
 Deduplicate all results by `id` before presenting.
 
 ### Community UID Resolution
 
-```bash
-# Step 1: Get the community UID from the slug
-curl -s "https://gapapi.karmahq.xyz/v2/communities/filecoin" | jq -r '.uid'
-# → 0x347ed1f6...
+Slugs are not guessable (e.g., "GEN Ukraine" → `gen-ukraine-community`), so fetch the full list and match by name:
 
-# Step 2: Use it in the search
-curl -s "https://gapapi.karmahq.xyz/v2/program-registry/search?isValid=accepted&limit=10&communityUid=0x347ed1f6..."
+```bash
+# Fetch all communities (~48) and find the matching UID
+curl -s "https://gapapi.karmahq.xyz/v2/communities?limit=100"
+# Response: { "payload": [{ "uid": "0x...", "details": { "name": "GEN Ukraine", "slug": "gen-ukraine-community" } }, ...] }
+# Match user query "ukraine" against details.name (case-insensitive partial match)
+# Use the matched uid in: communityUid={uid}
 ```
 
 ## Query Defaults
