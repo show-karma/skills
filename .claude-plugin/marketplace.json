@@ -9,12 +9,12 @@
   },
   "plugins": [
     {
-      "name": "find-programs",
+      "name": "find-opportunities",
       "description": "Search the Karma Funding Map for grants, hackathons, bounties, accelerators, VC funds, and RFPs",
       "source": "./",
       "strict": false,
       "skills": [
-        "./skills/find-programs"
+        "./skills/find-opportunities"
       ]
     }
   ]
