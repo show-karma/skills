@@ -35,18 +35,14 @@ The `SKILL.md` file contains YAML frontmatter (name, description, version, tags)
 
 ## Available Skills
 
-No published skills yet. Check back soon or [contribute one](CONTRIBUTING.md)!
+| Skill | Description |
+|-------|-------------|
+| [`find-opportunities`](skills/find-opportunities/) | Search the Karma Funding Map for grants, hackathons, bounties, accelerators, VC funds, and RFPs |
+| [`skill-creator`](.claude/skills/skill-creator/) | Meta-skill that guides you through designing, writing, and validating new Karma skills |
 
 ## Creating Skills
 
-This repo includes a meta-skill for creating new Karma skills:
-
-```bash
-# The skill-creator lives in .claude/skills/skill-creator/
-# It guides you through designing, writing, and validating new skills
-```
-
-See the [Contributing Guide](CONTRIBUTING.md) for skill structure requirements and naming conventions.
+Use the `skill-creator` meta-skill to scaffold new skills, or see the [Contributing Guide](CONTRIBUTING.md) for skill structure requirements and naming conventions.
 
 ## Karma Ecosystem
 

@@ -1,5 +1,5 @@
 ---
-name: find-programs
+name: find-opportunities
 description: Search the Karma Funding Map for funding programs (grants, hackathons, bounties, accelerators, VC funds, RFPs) via the public API. Use when a user asks about funding opportunities, programs, or ecosystem grants.
 ---
 
