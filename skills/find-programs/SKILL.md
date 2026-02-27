@@ -83,10 +83,10 @@ Research, Tool
 
 | User says | Maps to |
 |-----------|---------|
-| "Ethereum programs" | `ecosystems=Ethereum` |
+| "Ethereum programs" | `ecosystems=Ethereum` (see Ecosystem Search Strategy below) |
 | "hackathons" | `type=hackathon` |
-| "hackathons on Ethereum" | `type=hackathon&ecosystems=Ethereum` |
-| "bounties on Solana" | `type=bounty&ecosystems=Solana` |
+| "hackathons on Ethereum" | `type=hackathon&ecosystems=Ethereum` (see Ecosystem Search Strategy below) |
+| "bounties on Solana" | `type=bounty&ecosystems=Solana` (see Ecosystem Search Strategy below) |
 | "bounties over $500" | `type=bounty&minGrantSize=500` |
 | "accelerator programs" | `type=accelerator` |
 | "VCs investing in DeFi" | `type=vc_fund&name=DeFi` |
@@ -106,6 +106,28 @@ Budget shorthand: K→000, M→000000 (e.g., $50K → 50000, $1M → 1000000).
 
 **URL encoding:** Values with spaces or special characters must be percent-encoded when building `curl` URLs (e.g., `categories=Retroactive%20Funding`, not `Retroactive Funding`). Most HTTP clients handle this automatically, but manual URL construction requires explicit encoding.
 
+## Ecosystem Search Strategy
+
+The `ecosystems` metadata field is often empty — many programs are linked to an ecosystem only via the `communities` field. When searching by ecosystem, run these queries in parallel and merge:
+
+1. **Community UID lookup**: fetch all communities from `GET /v2/communities?limit=100`, find the best match for the user's query by comparing against community names (case-insensitive, partial match), then query with `communityUid={uid}`
+2. **`ecosystems={name}`** — matches programs with populated ecosystem metadata
+3. **`name={name}`** — text search on title, universal fallback
+
+Deduplicate all results by `id` before presenting.
+
+### Community UID Resolution
+
+Slugs are not guessable (e.g., "GEN Ukraine" → `gen-ukraine-community`), so fetch the full list and match by name:
+
+```bash
+# Fetch all communities (~48) and find the matching UID
+curl -s "https://gapapi.karmahq.xyz/v2/communities?limit=100"
+# Response: { "payload": [{ "uid": "0x...", "details": { "name": "GEN Ukraine", "slug": "gen-ukraine-community" } }, ...] }
+# Match user query "ukraine" against details.name (case-insensitive partial match)
+# Use the matched uid in: communityUid={uid}
+```
+
 ## Query Defaults
 
 Always include:
@@ -123,6 +145,8 @@ Use `curl` via Bash to call the API. Build the URL from the mapped parameters:
 ```bash
 curl -s "https://gapapi.karmahq.xyz/v2/program-registry/search?isValid=accepted&limit=10&sortField=updatedAt&sortOrder=desc&ecosystems=Ethereum"
 ```
+
+For ecosystem searches, run all three queries in parallel (community UID, ecosystems, name) and deduplicate by `id` before presenting results. See Ecosystem Search Strategy above.
 
 Parse the JSON response and format results as described below.
 
@@ -177,7 +201,7 @@ Showing 10 of 42. Ask for more or narrow your search.
 
 | Scenario | Response |
 |----------|----------|
-| No results | "No programs found matching your criteria. Try broadening — remove type, ecosystem, or budget filters." |
+| No results | Try the ecosystem fallback query (see Ecosystem Search Strategy) before giving up. If still none: "No programs found matching your criteria. Try broadening — remove type, ecosystem, or budget filters." |
 | API error | "Could not reach the Karma API. Try again in a moment." |
 | No query | Ask: "What kind of funding are you looking for? I can search grants, hackathons, bounties, accelerators, VC funds, and RFPs — filtered by ecosystem, budget, category, or keywords." |
 | "more results" / "page 2" | Re-run with `page=2` |
