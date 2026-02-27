@@ -108,13 +108,24 @@ Budget shorthand: K→000, M→000000 (e.g., $50K → 50000, $1M → 1000000).
 
 ## Ecosystem Search Strategy
 
-The `ecosystems` metadata field is often empty — many programs are linked to an ecosystem only via the `communities` field. When searching by ecosystem:
+The `ecosystems` metadata field is often empty — many programs are linked to an ecosystem only via the `communities` field. When searching by ecosystem, run these queries in parallel and merge:
 
-1. **First query**: use `ecosystems={name}` as normal
-2. **If few or zero results**: run a second query with `name={ecosystem name}` to catch programs that mention the ecosystem in their title
-3. **Deduplicate** by `id` and merge results
+1. **Community UID lookup** (most reliable): resolve the ecosystem name to a community UID via `GET /v2/communities/{slug}` (slug is lowercase, e.g., `filecoin`, `optimism`), then query with `communityUid={uid}`
+2. `ecosystems={name}` — matches programs with populated ecosystem metadata
+3. `name={name}` — catches programs that mention the ecosystem in their title
 
-This ensures programs like "ProPGF Batch 2 - Pods Track" (linked to Filecoin only via `communities`, not `ecosystems`) are not missed.
+Deduplicate all results by `id` before presenting.
+
+### Community UID Resolution
+
+```bash
+# Step 1: Get the community UID from the slug
+curl -s "https://gapapi.karmahq.xyz/v2/communities/filecoin" | jq -r '.uid'
+# → 0x347ed1f6...
+
+# Step 2: Use it in the search
+curl -s "https://gapapi.karmahq.xyz/v2/program-registry/search?isValid=accepted&limit=10&communityUid=0x347ed1f6..."
+```
 
 ## Query Defaults
 
@@ -134,13 +145,7 @@ Use `curl` via Bash to call the API. Build the URL from the mapped parameters:
 curl -s "https://gapapi.karmahq.xyz/v2/program-registry/search?isValid=accepted&limit=10&sortField=updatedAt&sortOrder=desc&ecosystems=Ethereum"
 ```
 
-For ecosystem searches, if the first query returns few or zero results, run a fallback:
-
-```bash
-curl -s "https://gapapi.karmahq.xyz/v2/program-registry/search?isValid=accepted&limit=10&sortField=updatedAt&sortOrder=desc&name=Filecoin"
-```
-
-Deduplicate by `id` before presenting results.
+For ecosystem searches, run all three queries in parallel (community UID, ecosystems, name) and deduplicate by `id` before presenting results. See Ecosystem Search Strategy above.
 
 Parse the JSON response and format results as described below.
 
