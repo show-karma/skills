@@ -1,0 +1,21 @@
+{
+  "name": "karma-skills",
+  "owner": {
+    "name": "Karma"
+  },
+  "metadata": {
+    "description": "Claude Code skills for the Karma ecosystem",
+    "version": "0.1.0"
+  },
+  "plugins": [
+    {
+      "name": "find-programs",
+      "description": "Search the Karma Funding Map for grants, hackathons, bounties, accelerators, VC funds, and RFPs",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/find-programs"
+      ]
+    }
+  ]
+}

@@ -97,12 +97,14 @@ Research, Tool
 | "funding under $100K" | `maxGrantSize=100000` |
 | "infrastructure" | `name=infrastructure` |
 | "active programs" | `status=active` |
-| "retroactive funding on Optimism" | `ecosystems=Optimism&categories=Retroactive Funding` |
+| "retroactive funding on Optimism" | `ecosystems=Optimism&categories=Retroactive%20Funding` |
 | "programs on Karma" | `onlyOnKarma=true` |
 | "what's closing this week" | `sortField=endsAt&sortOrder=asc&status=active` |
 | (no query) | Ask what they're looking for |
 
 Budget shorthand: K→000, M→000000 (e.g., $50K → 50000, $1M → 1000000).
+
+**URL encoding:** Values with spaces or special characters must be percent-encoded when building `curl` URLs (e.g., `categories=Retroactive%20Funding`, not `Retroactive Funding`). Most HTTP clients handle this automatically, but manual URL construction requires explicit encoding.
 
 ## Query Defaults
 
