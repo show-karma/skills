@@ -38,7 +38,6 @@ The `SKILL.md` file contains YAML frontmatter (name, description, version, tags)
 | Skill | Description |
 |-------|-------------|
 | [`find-opportunities`](skills/find-opportunities/) | Search the Karma Funding Map for grants, hackathons, bounties, accelerators, VC funds, and RFPs |
-| [`skill-creator`](.claude/skills/skill-creator/) | Meta-skill that guides you through designing, writing, and validating new Karma skills |
 
 ## Creating Skills
 
