@@ -18,11 +18,13 @@ Then ask your agent:
 
 Skills are reusable instruction sets that encode domain expertise into repeatable workflows. Each skill teaches an AI agent how to perform a specific task within the Karma ecosystem. Skills work with any compatible agent client, including Claude Code, Codex, Openclaw, and others.
 
+The `SKILL.md` file contains YAML frontmatter (name, description, version, tags) followed by the instructions Agnets will follow.
+
 ## Available Skills
 
 | Skill | Description |
 |-------|-------------|
-| [find-programs](skills/find-programs/) | Search the Karma Funding Map for funding programs (grants, hackathons, bounties, accelerators, VC funds, RFPs) |
+| [`find-opportunities`](skills/find-opportunities/) | Search the Karma Funding Map for grants, hackathons, bounties, accelerators, VC funds, and RFPs |
 
 ## Focus Areas
 
@@ -38,14 +40,6 @@ skills/my-skill/
 ├── scripts/          # Helper scripts (optional)
 └── references/       # Reference documents (optional)
 ```
-
-The `SKILL.md` file contains YAML frontmatter (name, description, version, tags) followed by the instructions Agnets will follow.
-
-## Available Skills
-
-| Skill | Description |
-|-------|-------------|
-| [`find-opportunities`](skills/find-opportunities/) | Search the Karma Funding Map for grants, hackathons, bounties, accelerators, VC funds, and RFPs |
 
 ## Karma Ecosystem
 
