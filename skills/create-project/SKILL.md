@@ -14,6 +14,10 @@ Create a new project on the Karma GAP protocol. This creates two on-chain attest
 
 See [Agent API Reference](../references/agent-api.md) for auth, base URL, and error handling.
 
+## Prerequisite
+
+If `KARMA_API_KEY` is not set in the environment, invoke the `/setup-agent` skill first, then continue with this skill.
+
 ## Required Information
 
 Gather from the user before calling the API:
@@ -72,5 +76,5 @@ Display the result using the output format from the reference. The project will 
 |----------|----------|
 | Missing title or description | Ask the user for the missing field |
 | Chain not specified | Ask which chain, suggest options |
-| API key not set | Tell user to run `setup-agent` skill |
+| API key not set | Invoke `/setup-agent` skill automatically |
 | Title too long (>200) | Truncate and confirm with user |

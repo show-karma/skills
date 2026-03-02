@@ -14,6 +14,10 @@ Add a milestone to an existing grant. This creates a Milestone attestation refer
 
 See [Agent API Reference](../references/agent-api.md) for auth, base URL, and error handling.
 
+## Prerequisite
+
+If `KARMA_API_KEY` is not set in the environment, invoke the `/setup-agent` skill first, then continue with this skill.
+
 ## Required Information
 
 | Field | Required | Description |
