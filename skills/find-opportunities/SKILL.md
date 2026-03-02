@@ -149,7 +149,7 @@ Showing 10 of 42. Ask for more or narrow your search.
 
 | Scenario | Response |
 |----------|----------|
-| No results | Run the full ecosystem search strategy (all 3 queries) before giving up. If still none: "No programs found matching your criteria. Try broadening — remove type, ecosystem, or budget filters." |
+| No results | If the user specified an ecosystem, run the full ecosystem search strategy (Phase 1 + Phase 2) before giving up. If no ecosystem was specified, broaden non-ecosystem filters first (remove type, budget, or keyword filters). If still none: "No programs found matching your criteria. Try broadening — remove type, ecosystem, or budget filters." |
 | No query | Ask: "What kind of funding are you looking for? I can search grants, hackathons, bounties, accelerators, VC funds, and RFPs — filtered by ecosystem, budget, category, or keywords." |
 | "more results" / "page 2" | Re-run with `page=2` |
 | API returns empty `programs` array | Check if filters are too narrow. Suggest removing one filter at a time. |
