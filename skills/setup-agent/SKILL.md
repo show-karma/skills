@@ -1,8 +1,11 @@
 ---
 name: setup-agent
-description: Configure your Karma GAP API key for agent actions. Run this once before using any project, grant, or milestone skills.
+description: Configure your Karma GAP API key for agent actions. Use when user says "set up agent", "configure API key", "connect to Karma", or before first use of any Karma GAP skill.
 version: 0.1.0
 tags: [agent, setup, authentication]
+metadata:
+  author: Karma
+  category: authentication
 ---
 
 # Setup Karma Agent

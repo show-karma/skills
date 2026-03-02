@@ -1,8 +1,11 @@
 ---
 name: create-project-update
-description: Post a progress update on an existing Karma GAP project. Attests a ProjectUpdate on-chain.
+description: Post a progress update on an existing Karma GAP project. Use when user says "post an update", "project progress report", "share project status", or "send project update".
 version: 0.1.0
 tags: [agent, project, update, progress]
+metadata:
+  author: Karma
+  category: project-management
 ---
 
 # Create Project Update
@@ -64,8 +67,7 @@ curl -s -X POST "${BASE_URL}/v2/agent/execute" \
 
 ## After Success
 
-1. Trigger the indexer with the transaction hash and chain ID
-2. Display the result using the standard output format
+Display the result using the standard output format. The update will be automatically indexed by the system.
 
 ## Edge Cases
 

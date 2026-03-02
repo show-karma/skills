@@ -1,8 +1,11 @@
 ---
 name: update-project
-description: Update an existing project's details (title, description, image, links, tags) on the Karma GAP protocol.
+description: Update an existing project's details (title, description, image, links, tags) on the Karma GAP protocol. Use when user says "update project", "change project details", "edit project", or "rename project".
 version: 0.1.0
 tags: [agent, project, update]
+metadata:
+  author: Karma
+  category: project-management
 ---
 
 # Update Project
@@ -71,8 +74,7 @@ curl -s -X POST "${BASE_URL}/v2/agent/execute" \
 
 ## After Success
 
-1. Trigger the indexer with the transaction hash and chain ID
-2. Display the result using the standard output format
+Display the result using the standard output format. The updated details will be automatically indexed by the system.
 
 ## Edge Cases
 

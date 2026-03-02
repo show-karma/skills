@@ -46,15 +46,7 @@ curl -s -X POST "${BASE_URL}/v2/agent/execute" \
 }
 ```
 
-### After Success: Trigger Indexer
-
-Always trigger the indexer after a successful execute call so the attestation is immediately searchable:
-
-```bash
-curl -s -X POST "${BASE_URL}/attestations/index-by-transaction/${TX_HASH}/${CHAIN_ID}"
-```
-
-Expected response: `{"status":"indexed"}`
+Attestations are automatically indexed by the system after a successful transaction.
 
 ## Info Endpoint
 
@@ -145,6 +137,4 @@ After a successful action, always display:
 Transaction: {transactionHash}
 Chain: {chainName} ({chainId})
 Smart Account: {smartAccountAddress}
-
-Indexer: {indexed status}
 ```

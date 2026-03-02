@@ -1,8 +1,11 @@
 ---
 name: create-project-with-grant
-description: Create a new project with a grant in a single transaction on the Karma GAP protocol. Attests Project + ProjectDetails + Grant + GrantDetails.
+description: Create a new project with a grant in a single transaction on the Karma GAP protocol. Use when user says "create project with grant", "new project with funding", "set up project and grant together", or "register funded project".
 version: 0.1.0
 tags: [agent, project, grant, create, batch]
+metadata:
+  author: Karma
+  category: project-management
 ---
 
 # Create Project with Grant
@@ -88,18 +91,18 @@ curl -s -X POST "${BASE_URL}/v2/agent/execute" \
 
 ## After Success
 
-1. Trigger the indexer with the transaction hash and chain ID
-2. Display the result — note this created 4 attestations in one tx:
-   ```
-   Project + Grant created successfully!
+Display the result. Note this created 4 attestations in one tx:
 
-   Transaction: 0x...
-   Chain: Optimism (10)
-   Smart Account: 0x...
-   Attestations: Project, ProjectDetails, Grant, GrantDetails (4 in 1 tx)
+```
+Project + Grant created successfully!
 
-   Indexer: indexed
-   ```
+Transaction: 0x...
+Chain: Optimism (10)
+Smart Account: 0x...
+Attestations: Project, ProjectDetails, Grant, GrantDetails (4 in 1 tx)
+```
+
+The project and grant will be automatically indexed by the system.
 
 ## Edge Cases
 

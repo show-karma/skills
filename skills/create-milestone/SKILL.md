@@ -1,8 +1,11 @@
 ---
 name: create-milestone
-description: Add a milestone to a grant on the Karma GAP protocol. Attests a Milestone on-chain.
+description: Add a milestone to a grant on the Karma GAP protocol. Use when user says "add milestone", "create milestone", "set deliverable", "add deadline to grant", or "define grant milestones".
 version: 0.1.0
 tags: [agent, milestone, create, grant]
+metadata:
+  author: Karma
+  category: grant-management
 ---
 
 # Create Milestone
@@ -92,8 +95,7 @@ curl -s -X POST "${BASE_URL}/v2/agent/execute" \
 
 ## After Success
 
-1. Trigger the indexer with the transaction hash and chain ID
-2. Display the result using the standard output format
+Display the result using the standard output format. The milestone will be automatically indexed by the system.
 
 ## Edge Cases
 

@@ -1,8 +1,11 @@
 ---
 name: create-grant
-description: Add a grant (funding) to an existing Karma GAP project. Attests Grant + GrantDetails on-chain.
+description: Add a grant (funding) to an existing Karma GAP project. Use when user says "add a grant", "record funding", "create grant", "add funding to project", or "received a grant".
 version: 0.1.0
 tags: [agent, grant, create, funding]
+metadata:
+  author: Karma
+  category: grant-management
 ---
 
 # Create Grant
@@ -82,8 +85,7 @@ curl -s -X POST "${BASE_URL}/v2/agent/execute" \
 
 ## After Success
 
-1. Trigger the indexer with the transaction hash and chain ID
-2. Display the result using the standard output format
+Display the result using the standard output format. The grant will be automatically indexed by the system.
 
 ## Edge Cases
 

@@ -1,8 +1,11 @@
 ---
 name: create-grant-update
-description: Post a progress update on an existing grant in the Karma GAP protocol. Attests a GrantUpdate on-chain.
+description: Post a progress update on an existing grant in the Karma GAP protocol. Use when user says "grant update", "grant progress", "report on grant", or "update my grant status".
 version: 0.1.0
 tags: [agent, grant, update, progress]
+metadata:
+  author: Karma
+  category: grant-management
 ---
 
 # Create Grant Update
@@ -76,8 +79,7 @@ curl -s -X POST "${BASE_URL}/v2/agent/execute" \
 
 ## After Success
 
-1. Trigger the indexer with the transaction hash and chain ID
-2. Display the result using the standard output format
+Display the result using the standard output format. The update will be automatically indexed by the system.
 
 ## Edge Cases
 

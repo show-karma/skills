@@ -1,8 +1,11 @@
 ---
 name: complete-milestone
-description: Mark a milestone as completed on the Karma GAP protocol. Attests a MilestoneCompleted on-chain.
+description: Mark a milestone as completed on the Karma GAP protocol. Use when user says "complete milestone", "mark milestone done", "finish milestone", "milestone completed", or "submit milestone proof".
 version: 0.1.0
 tags: [agent, milestone, complete]
+metadata:
+  author: Karma
+  category: grant-management
 ---
 
 # Complete Milestone
@@ -79,8 +82,7 @@ curl -s -X POST "${BASE_URL}/v2/agent/execute" \
 
 ## After Success
 
-1. Trigger the indexer with the transaction hash and chain ID
-2. Display the result using the standard output format
+Display the result using the standard output format. The completion will be automatically indexed by the system.
 
 ## Edge Cases
 

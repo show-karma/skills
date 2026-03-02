@@ -1,8 +1,11 @@
 ---
 name: create-project
-description: Create a new project on the Karma GAP protocol. Attests a Project + ProjectDetails on-chain via the agent API.
+description: Create a new project on the Karma GAP protocol. Use when user says "create a project", "new project", "register project", or "start a project on Karma".
 version: 0.1.0
 tags: [agent, project, create]
+metadata:
+  author: Karma
+  category: project-management
 ---
 
 # Create Project
@@ -61,12 +64,7 @@ curl -s -X POST "${BASE_URL}/v2/agent/execute" \
 
 ## After Success
 
-1. Parse the response to get `transactionHash` and `chainId`
-2. Trigger the indexer:
-   ```bash
-   curl -s -X POST "${BASE_URL}/attestations/index-by-transaction/${TX_HASH}/${CHAIN_ID}"
-   ```
-3. Display the result using the output format from the reference
+Display the result using the output format from the reference. The project will be automatically indexed by the system.
 
 ## Edge Cases
 
