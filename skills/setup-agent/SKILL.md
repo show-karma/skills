@@ -1,8 +1,8 @@
 ---
 name: setup-agent
-description: Configure your Karma GAP API key for agent actions. Use when user says "set up agent", "configure API key", "connect to Karma", or before first use of any Karma GAP skill.
-version: 0.1.0
-tags: [agent, setup, authentication]
+description: Set up or log in to Karma GAP. Use when user says "set up agent", "configure API key", "connect to Karma", "login to Karma", "log in", or before first use of any Karma GAP skill.
+version: 0.2.0
+tags: [agent, setup, authentication, login]
 metadata:
   author: Karma
   category: authentication
@@ -12,34 +12,87 @@ metadata:
 
 Configure your environment to use Karma GAP agent skills. Run this once before using any action skill.
 
-## What You Need
+See [Agent API Reference](../references/agent-api.md) for base URL and error handling.
 
-A Karma API key (`karma_...`). You can get one from:
-- **Karma GAP website**: Go to your profile settings and generate an API key
-- **API directly**: If you have a JWT token, call `POST /v2/user/api-keys`
+## Flow
 
-## Setup Steps
+Check if `KARMA_API_KEY` is already set:
 
-### 1. Set Your API Key
+- **If set** → skip to [Verify Configuration](#3-verify-configuration)
+- **If not set** → ask the user:
 
-Ask the user for their API key, then guide them to export it:
+> Do you already have a Karma API key, or would you like to create one?
+
+- **"I have one"** → ask for it, skip to [Set Your API Key](#1-set-your-api-key)
+- **"Create one" / "Login"** → go to [Create API Key via Email](#create-api-key-via-email)
+
+## Create API Key via Email
+
+### Step 1: Ask for Email
+
+Ask the user for their email address.
+
+### Step 2: Send Verification Code
+
+```bash
+BASE_URL="${KARMA_API_URL:-https://gapapi.karmahq.xyz}"
+
+curl -s -X POST "${BASE_URL}/v2/api-keys/auth/init" \
+  -H "Content-Type: application/json" \
+  -d '{ "email": "user@example.com" }'
+```
+
+**Expected response:**
+```json
+{ "message": "Verification code sent to user@example.com" }
+```
+
+Tell the user: "Check your email for a verification code from Karma."
+
+### Step 3: Verify Code
+
+Ask the user for the code they received, then:
+
+```bash
+curl -s -X POST "${BASE_URL}/v2/api-keys/auth/verify" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "user@example.com",
+    "code": "123456",
+    "name": "claude-agent"
+  }'
+```
+
+**Expected response:**
+```json
+{ "key": "karma_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" }
+```
+
+**Important:** The key is shown only once. Proceed immediately to set it.
+
+### Step 4: Handle Errors
+
+| Error | Meaning | Action |
+|-------|---------|--------|
+| `400 Invalid or expired code` | Wrong code or expired | Ask user to check code or request a new one |
+| `409 Active key already exists` | User already has a key | Tell them to use their existing key or revoke it from the website |
+| `429 Too many requests` | Rate limited | Wait and try again |
+
+## 1. Set Your API Key
 
 ```bash
 export KARMA_API_KEY="karma_your_key_here"
 ```
 
-### 2. Set the API URL (Optional)
+## 2. Set the API URL (Optional)
 
-Defaults to production. For staging or local development:
+Defaults to production. For local development:
 
 ```bash
-export KARMA_API_URL="https://gapapi.karmahq.xyz"  # production (default)
-export KARMA_API_URL="http://localhost:3002"         # local development
+export KARMA_API_URL="http://localhost:3002"
 ```
 
-### 3. Verify Configuration
-
-Run this to verify everything works:
+## 3. Verify Configuration
 
 ```bash
 curl -s "${KARMA_API_URL:-https://gapapi.karmahq.xyz}/v2/agent/info" \
@@ -56,9 +109,9 @@ curl -s "${KARMA_API_URL:-https://gapapi.karmahq.xyz}/v2/agent/info" \
 }
 ```
 
-### 4. Confirm Success
+## 4. Confirm Success
 
-If the response includes `walletAddress` and `supportedActions`, the setup is complete. Tell the user:
+If the response includes `walletAddress` and `supportedActions`, tell the user:
 
 > Your Karma agent is ready! You can now use these skills:
 > - `create-project` — Create a new project on-chain
@@ -74,7 +127,7 @@ If the response includes `walletAddress` and `supportedActions`, the setup is co
 
 | Issue | Fix |
 |-------|-----|
-| `401 Invalid or revoked API key` | Key is wrong or expired — regenerate at gap.karmahq.xyz |
+| `401 Invalid or revoked API key` | Key is wrong or expired — regenerate via email flow or at gap.karmahq.xyz |
 | `walletAddress: null` | Key was created before server wallets — regenerate it |
 | `Connection refused` | Wrong `KARMA_API_URL` — check the URL is reachable |
 | `KARMA_API_KEY not set` | Run `export KARMA_API_KEY="karma_..."` in your terminal |
