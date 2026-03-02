@@ -4,6 +4,20 @@
 **Endpoint**: `GET /v2/program-registry/search`
 **Auth**: None (public)
 
+## Required Headers
+
+Every request must include these tracking headers:
+
+```bash
+INVOCATION_ID=$(uuidgen)  # generate once per skill invocation, reuse across all requests
+```
+
+| Header | Value | Purpose |
+|--------|-------|---------|
+| `X-Source` | `skill:find-opportunities` | Distinguish skill traffic from other API consumers |
+| `X-Invocation-Id` | `$INVOCATION_ID` | Group the 1–4 curl calls per query into one trace |
+| `X-Skill-Version` | `1.2.0` | Track adoption of skill updates |
+
 ## Query Parameters
 
 | Param | Type | Default | Notes |

@@ -3,7 +3,7 @@ name: find-opportunities
 description: Search the Karma Funding Map for funding programs (grants, hackathons, bounties, accelerators, VC funds, RFPs) via the public API. Use when a user asks to find grants, search for hackathons, look for bounties, explore funding on a specific ecosystem like Optimism or Ethereum, asks about programs over or under a budget, wants to know what they can apply to, or asks about funding programs for web3 builders.
 metadata:
   author: Show Karma
-  version: 1.1.0
+  version: 1.2.0
 ---
 
 # Funding Program Finder
@@ -61,26 +61,41 @@ Deduplicate all merged results by `id` before presenting.
 
 ### Step 3: Build and Execute the Request
 
-Use `curl` via Bash. Always include these defaults:
+Use `curl` via Bash. Before the first request, generate a tracking ID and set up defaults:
+
+```bash
+INVOCATION_ID=$(uuidgen)
+```
+
+Every `curl` call must include these query defaults and tracking headers:
 
 ```
+# Query defaults (override sortField=endsAt&sortOrder=asc for deadline queries)
 isValid=accepted&limit=10&sortField=updatedAt&sortOrder=desc
-```
 
-Override `sortField=endsAt&sortOrder=asc` when the user asks about deadlines.
+# Required headers — include on every request
+-H "X-Source: skill:find-opportunities"
+-H "X-Invocation-Id: $INVOCATION_ID"
+-H "X-Skill-Version: 1.2.0"
+```
 
 ```bash
 # No ecosystem
-curl -s "https://gapapi.karmahq.xyz/v2/program-registry/search?isValid=accepted&limit=10&sortField=updatedAt&sortOrder=desc&type=hackathon"
+curl -s -H "X-Source: skill:find-opportunities" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 1.2.0" \
+  "https://gapapi.karmahq.xyz/v2/program-registry/search?isValid=accepted&limit=10&sortField=updatedAt&sortOrder=desc&type=hackathon"
 
 # Ecosystem — Phase 1
-curl -s "https://gapapi.karmahq.xyz/v2/program-registry/search?isValid=accepted&limit=10&sortField=updatedAt&sortOrder=desc&ecosystems=Ethereum"
+curl -s -H "X-Source: skill:find-opportunities" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 1.2.0" \
+  "https://gapapi.karmahq.xyz/v2/program-registry/search?isValid=accepted&limit=10&sortField=updatedAt&sortOrder=desc&ecosystems=Ethereum"
 
 # Ecosystem — Phase 2 (only if Phase 1 returned < 5 results)
-curl -s "https://gapapi.karmahq.xyz/v2/communities?limit=100"
+curl -s -H "X-Source: skill:find-opportunities" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 1.2.0" \
+  "https://gapapi.karmahq.xyz/v2/communities?limit=100"
 # Match community UID from response, then:
-curl -s "https://gapapi.karmahq.xyz/v2/program-registry/search?isValid=accepted&limit=10&sortField=updatedAt&sortOrder=desc&communityUid={uid}"
-curl -s "https://gapapi.karmahq.xyz/v2/program-registry/search?isValid=accepted&limit=10&sortField=updatedAt&sortOrder=desc&name=Ethereum"
+curl -s -H "X-Source: skill:find-opportunities" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 1.2.0" \
+  "https://gapapi.karmahq.xyz/v2/program-registry/search?isValid=accepted&limit=10&sortField=updatedAt&sortOrder=desc&communityUid={uid}"
+curl -s -H "X-Source: skill:find-opportunities" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 1.2.0" \
+  "https://gapapi.karmahq.xyz/v2/program-registry/search?isValid=accepted&limit=10&sortField=updatedAt&sortOrder=desc&name=Ethereum"
 ```
 
 ### Step 4: Format Results
