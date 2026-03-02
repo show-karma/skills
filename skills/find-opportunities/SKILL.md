@@ -1,6 +1,9 @@
 ---
 name: find-opportunities
 description: Search the Karma Funding Map for funding programs (grants, hackathons, bounties, accelerators, VC funds, RFPs) via the public API. Use when a user asks to find grants, search for hackathons, look for bounties, explore funding on a specific ecosystem like Optimism or Ethereum, asks about programs over or under a budget, wants to know what they can apply to, or asks about funding programs for web3 builders.
+metadata:
+  author: Show Karma
+  version: 1.1.0
 ---
 
 # Funding Program Finder
@@ -9,148 +12,78 @@ Search the Karma Funding Map for funding programs via the public API.
 
 The registry has 6 program types: grants, hackathons, bounties, accelerators, VC funds, and RFPs. Use "programs" / "opportunities" / "funding" — not just "grants".
 
-## API
+For full API parameters, response shape, and known values, see [references/api-reference.md](references/api-reference.md).
 
-**Base URL**: `https://gapapi.karmahq.xyz`
-**Endpoint**: `GET /v2/program-registry/search`
-**Auth**: None (public)
+## Workflow
 
-### Query Parameters
-
-| Param | Type | Default | Notes |
-|-------|------|---------|-------|
-| `page` | int | 1 | 1-indexed |
-| `limit` | int | 12 | Max 100 |
-| `name` | string | — | Text search on title (case-insensitive regex) |
-| `type` | string | — | Comma-separated: `grant,hackathon,bounty,accelerator,vc_fund,rfp` |
-| `isValid` | enum | `accepted` | `accepted` / `rejected` / `pending` / `all` |
-| `status` | enum | — | `active` / `inactive` (computed from deadline/endsAt) |
-| `ecosystems` | string | — | Comma-separated: `Ethereum,Optimism` |
-| `categories` | string | — | Comma-separated |
-| `networks` | string | — | Comma-separated |
-| `grantTypes` | string | — | Comma-separated |
-| `communities` | string | — | Comma-separated community UIDs |
-| `minGrantSize` | int | — | Min grant/reward size in USD |
-| `maxGrantSize` | int | — | Max grant/reward size in USD |
-| `sortField` | enum | `updatedAt` | `createdAt` / `updatedAt` / `startsAt` / `endsAt` / `name` |
-| `sortOrder` | enum | `desc` | `asc` / `desc` |
-| `onlyOnKarma` | bool | false | Only programs tracked on Karma |
-| `communityUid` | string | — | Filter by community |
-| `organization` | string | — | Filter by org name |
-
-### Program Types
-
-| Value | Description |
-|-------|-------------|
-| `grant` | Funding programs, ecosystem funds, retroactive/quadratic funding |
-| `hackathon` | Time-bound building competitions with prizes and tracks |
-| `bounty` | Task-based rewards with defined scope and payout |
-| `accelerator` | Cohort programs with mentorship, often equity-based |
-| `vc_fund` | Venture capital funds investing in web3 projects |
-| `rfp` | Requests for proposals from DAOs/foundations with defined scope and budget |
-
-Omitting `type` returns all types. Multiple types: `type=grant,hackathon`.
-
-### Response Shape
-
-```json
-{
-  "programs": [{ "id", "programId", "type", "name", "isValid", "isActive", "isOnKarma", "deadline", "submissionUrl", "communities": [{ "uid", "name", "slug", "imageUrl" }], "createdAt", "updatedAt", "metadata": { "title", "description", "shortDescription", "status", "startsAt", "endsAt", "categories", "ecosystems", "networks", "grantTypes", "organizations", "minGrantSize", "maxGrantSize", "programBudget", "website", "projectTwitter", "anyoneCanJoin", "socialLinks": { "twitter", "discord", "website", "orgWebsite", "grantsSite" } } }],
-  "count", "totalPages", "currentPage", "hasNext", "hasPrevious"
-}
-```
-
-### Known Ecosystem Values
-
-```
-Ethereum, Optimism, Arbitrum, Base, Polygon, Solana, Cosmos,
-Avalanche, Near, Polkadot, Sui, Aptos, Starknet, zkSync,
-Scroll, Linea, Mantle, Celo, Gnosis, Fantom, Filecoin,
-Internet Computer, Tezos, Algorand, Hedera, MultiversX,
-TON, Sei, Injective, Osmosis, Celestia, Berachain, Monad
-```
-
-### Known Category Values
-
-```
-Funding Opportunity, Grant, DAO Governance, Award,
-Program Results, Upcoming Deadline, Retroactive Funding,
-Quadratic Funding, Ecosystem Fund, Developer Grant,
-Research, Tool
-```
-
-## Natural Language → Query Parameters
+### Step 1: Map the User's Request
 
 | User says | Maps to |
 |-----------|---------|
-| "Ethereum programs" | `ecosystems=Ethereum` (see Ecosystem Search Strategy below) |
+| "Ethereum programs" | `ecosystems=Ethereum` + ecosystem search strategy |
 | "hackathons" | `type=hackathon` |
-| "hackathons on Ethereum" | `type=hackathon&ecosystems=Ethereum` (see Ecosystem Search Strategy below) |
-| "bounties on Solana" | `type=bounty&ecosystems=Solana` (see Ecosystem Search Strategy below) |
+| "hackathons on Ethereum" | `type=hackathon` + ecosystem search strategy |
+| "bounties on Solana" | `type=bounty` + ecosystem search strategy |
 | "bounties over $500" | `type=bounty&minGrantSize=500` |
 | "accelerator programs" | `type=accelerator` |
 | "VCs investing in DeFi" | `type=vc_fund&name=DeFi` |
 | "open RFPs from Optimism" | `type=rfp&organization=Optimism` |
-| "grants and hackathons on Ethereum" | `type=grant,hackathon&ecosystems=Ethereum` |
-| "DeFi funding on Optimism" | `ecosystems=Optimism&name=DeFi` |
+| "grants and hackathons on Ethereum" | `type=grant,hackathon` + ecosystem search strategy |
+| "DeFi funding on Optimism" | `name=DeFi` + ecosystem search strategy |
 | "programs over $50K" | `minGrantSize=50000` |
 | "funding under $100K" | `maxGrantSize=100000` |
 | "infrastructure" | `name=infrastructure` |
 | "active programs" | `status=active` |
-| "retroactive funding on Optimism" | `ecosystems=Optimism&categories=Retroactive%20Funding` |
+| "retroactive funding on Optimism" | `categories=Retroactive%20Funding` + ecosystem search strategy |
 | "programs on Karma" | `onlyOnKarma=true` |
 | "what's closing this week" | `sortField=endsAt&sortOrder=asc&status=active` |
 | (no query) | Ask what they're looking for |
 
 Budget shorthand: K→000, M→000000 (e.g., $50K → 50000, $1M → 1000000).
 
-**URL encoding:** Values with spaces or special characters must be percent-encoded when building `curl` URLs (e.g., `categories=Retroactive%20Funding`, not `Retroactive Funding`). Most HTTP clients handle this automatically, but manual URL construction requires explicit encoding.
+**URL encoding:** Values with spaces must be percent-encoded in `curl` URLs (e.g., `categories=Retroactive%20Funding`).
 
-## Ecosystem Search Strategy
+### Step 2: Ecosystem Search Strategy
 
-The `ecosystems` metadata field is often empty — many programs are linked to an ecosystem only via the `communities` field. When searching by ecosystem, run these queries in parallel and merge:
+If the query has **no ecosystem** component, skip this step and go to Step 3.
 
-1. **Community UID lookup**: fetch all communities from `GET /v2/communities?limit=100`, find the best match for the user's query by comparing against community names (case-insensitive, partial match), then query with `communityUid={uid}`
-2. **`ecosystems={name}`** — matches programs with populated ecosystem metadata
-3. **`name={name}`** — text search on title, universal fallback
+The `ecosystems` metadata field is often empty — many programs are linked to an ecosystem only via the `communities` field. Use a two-phase approach:
 
-Deduplicate all results by `id` before presenting.
+**Phase 1 — Try `ecosystems=` first:**
+Query with `ecosystems={name}`. If this returns sufficient results (5+), present them and move to Step 4.
 
-### Community UID Resolution
+**Phase 2 — Enrich with community lookup (only if Phase 1 is sparse):**
+If Phase 1 returned fewer than 5 results, run these two additional queries and merge:
+1. **Community UID lookup**: fetch all communities from `GET /v2/communities?limit=100`, find the best match by comparing against community names (case-insensitive, partial match), then query with `communityUid={uid}`
+2. **`name={name}`** — text search on title, universal fallback
 
-Slugs are not guessable (e.g., "GEN Ukraine" → `gen-ukraine-community`), so fetch the full list and match by name:
+Deduplicate all merged results by `id` before presenting.
 
-```bash
-# Fetch all communities (~48) and find the matching UID
-curl -s "https://gapapi.karmahq.xyz/v2/communities?limit=100"
-# Response: { "payload": [{ "uid": "0x...", "details": { "name": "GEN Ukraine", "slug": "gen-ukraine-community" } }, ...] }
-# Match user query "ukraine" against details.name (case-insensitive partial match)
-# Use the matched uid in: communityUid={uid}
-```
+### Step 3: Build and Execute the Request
 
-## Query Defaults
-
-Always include:
+Use `curl` via Bash. Always include these defaults:
 
 ```
 isValid=accepted&limit=10&sortField=updatedAt&sortOrder=desc
 ```
 
-Override `sortField` and `sortOrder` when the user asks about deadlines — use `sortField=endsAt&sortOrder=asc`.
-
-## Making the Request
-
-Use `curl` via Bash to call the API. Build the URL from the mapped parameters:
+Override `sortField=endsAt&sortOrder=asc` when the user asks about deadlines.
 
 ```bash
+# No ecosystem
+curl -s "https://gapapi.karmahq.xyz/v2/program-registry/search?isValid=accepted&limit=10&sortField=updatedAt&sortOrder=desc&type=hackathon"
+
+# Ecosystem — Phase 1
 curl -s "https://gapapi.karmahq.xyz/v2/program-registry/search?isValid=accepted&limit=10&sortField=updatedAt&sortOrder=desc&ecosystems=Ethereum"
+
+# Ecosystem — Phase 2 (only if Phase 1 returned < 5 results)
+curl -s "https://gapapi.karmahq.xyz/v2/communities?limit=100"
+# Match community UID from response, then:
+curl -s "https://gapapi.karmahq.xyz/v2/program-registry/search?isValid=accepted&limit=10&sortField=updatedAt&sortOrder=desc&communityUid={uid}"
+curl -s "https://gapapi.karmahq.xyz/v2/program-registry/search?isValid=accepted&limit=10&sortField=updatedAt&sortOrder=desc&name=Ethereum"
 ```
 
-For ecosystem searches, run all three queries in parallel (community UID, ecosystems, name) and deduplicate by `id` before presenting results. See Ecosystem Search Strategy above.
-
-Parse the JSON response and format results as described below.
-
-## Result Format
+### Step 4: Format Results
 
 Include the program type in each result. Adapt the detail line based on type:
 
@@ -175,14 +108,14 @@ Found 42 programs (showing top 10):
 Showing 10 of 42. Ask for more or narrow your search.
 ```
 
-### Field Mapping
+#### Field Mapping
 
 - **Name**: `metadata.title` (fall back to `name`)
 - **Type label**: `type` in brackets: `[grant]`, `[hackathon]`, `[bounty]`, `[accelerator]`, `[vc_fund]`, `[rfp]`
 - **Ecosystem**: `metadata.ecosystems` joined with `, ` (fall back to `communities[0].name`)
 - **Description**: `metadata.description` truncated to ~120 chars
 
-### Type-Specific Detail Line
+#### Type-Specific Detail Line
 
 - **grant**: `Budget: {programBudget} | Status: {status}`
 - **hackathon**: `Dates: {startsAt}–{endsAt} | Deadline: {deadline}`
@@ -192,7 +125,7 @@ Showing 10 of 42. Ask for more or narrow your search.
 - **rfp**: `Budget: {programBudget} | Org: {organizations[0]} | Deadline: {deadline}`
 - **fallback**: `Budget: {programBudget} | Status: {status}`
 
-### Common Fields
+#### Common Fields
 
 - **Deadline**: `deadline` (top-level) formatted as `Mon DD, YYYY` (or "Rolling" if null)
 - **Apply link**: `submissionUrl` (top-level), fall back to `metadata.socialLinks.grantsSite` or `metadata.website` or `metadata.socialLinks.website` (first non-empty)
@@ -201,7 +134,38 @@ Showing 10 of 42. Ask for more or narrow your search.
 
 | Scenario | Response |
 |----------|----------|
-| No results | Try the ecosystem fallback query (see Ecosystem Search Strategy) before giving up. If still none: "No programs found matching your criteria. Try broadening — remove type, ecosystem, or budget filters." |
-| API error | "Could not reach the Karma API. Try again in a moment." |
+| No results | Run the full ecosystem search strategy (all 3 queries) before giving up. If still none: "No programs found matching your criteria. Try broadening — remove type, ecosystem, or budget filters." |
 | No query | Ask: "What kind of funding are you looking for? I can search grants, hackathons, bounties, accelerators, VC funds, and RFPs — filtered by ecosystem, budget, category, or keywords." |
 | "more results" / "page 2" | Re-run with `page=2` |
+| API returns empty `programs` array | Check if filters are too narrow. Suggest removing one filter at a time. |
+| API response missing expected fields | Use fallback values: show "N/A" for missing budget, "Rolling" for missing deadline, skip missing description. Never fail on a missing optional field. |
+
+## Error Handling
+
+| Error | Cause | Action |
+|-------|-------|--------|
+| HTTP 5xx | API server issue | "The Karma API is temporarily unavailable. Try again in a moment." |
+| HTTP 429 | Rate limiting | Wait 5 seconds, retry once. If it fails again, tell the user to wait. |
+| Connection timeout | Network or API down | "Could not reach the Karma API. Check your connection or try again shortly." |
+| Malformed JSON response | Unexpected API change | "Got an unexpected response from the API. The response format may have changed." |
+| Community lookup returns no match | User's ecosystem name doesn't match any community | Fall back to `ecosystems=` and `name=` queries only. Do not fail — partial results are better than none. |
+
+## Troubleshooting
+
+### Ecosystem search returns 0 results
+The user asked for an ecosystem (e.g., "Monad grants") but all 3 queries returned nothing.
+- Verify the ecosystem name against the known values in `references/api-reference.md`
+- Try a broader `name=` search with just the keyword
+- The ecosystem may genuinely have no programs listed yet — tell the user
+
+### Community UID lookup finds no match
+The community list (~48 entries) doesn't contain a match for the user's query.
+- Try partial matching: "OP" should match "Optimism"
+- Try without the community query — `ecosystems=` and `name=` may still return results
+- Do not block on this — proceed with the other two queries
+
+### Results look stale or incomplete
+Programs may have outdated metadata (missing budgets, old deadlines).
+- Present what's available; do not hide results with missing fields
+- Use "N/A" or "Rolling" for missing values
+- Note to the user: "Some programs may have incomplete information"
