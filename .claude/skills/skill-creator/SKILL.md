@@ -1,6 +1,6 @@
 ---
 name: skill-creator
-description: Create new Claude Code skills for the Karma ecosystem. Use when a user asks to create a skill, build a new skill, make a skill for a specific task, scaffold a skill, or design a skill. Guides through intent capture, SKILL.md writing, validation, and packaging. Specialized for grants management, funding maps, and ecosystem growth tooling.
+description: Create new Claude Code skills for the Karma ecosystem. Use when a user asks to create a skill, build a new skill, make a skill for a specific task, scaffold a skill, or design a skill. Guides through intent capture, SKILL.md writing, validation, and packaging.
 ---
 
 # Karma Skill Creator
@@ -172,7 +172,4 @@ Run through this checklist before considering the skill done:
 2. Note struggles or inefficiencies
 3. Update SKILL.md or resources
 
-**Primary focus areas for skills:**
-- Grants management (milestones, reporting)
-- Funding maps (cross-ecosystem funding flows)
-- Ecosystem growth (metrics, community health)
+Let the user's specifications guide the skill's domain and direction.
