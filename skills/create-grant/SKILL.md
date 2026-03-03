@@ -29,7 +29,24 @@ If `KARMA_API_KEY` is not set in the environment, invoke the `/setup-agent` skil
 | `description` | No | Grant description (max 5000 chars) |
 | `amount` | No | Funding amount as string (e.g., "50000") |
 | `proposalURL` | No | Link to the grant proposal |
-| `programId` | No | Program identifier |
+| `programId` | No | Program identifier (see below) |
+
+## Finding the programId
+
+If the user provides a program/track name but not a `programId`, look it up:
+
+```bash
+# Accepts community slug (e.g., "optimism") or UID (0x...)
+curl -s "${BASE_URL}/communities/${COMMUNITY_SLUG_OR_UID}/programs" | python3 -c "
+import sys, json
+data = json.load(sys.stdin)
+programs = data if isinstance(data, list) else data.get('payload', data.get('data', []))
+for p in programs:
+    print(f'Name: {p.get(\"metadata\", {}).get(\"title\", \"N/A\")} | ID: {p[\"programId\"]}')
+"
+```
+
+Use the matching `programId` value in the request params.
 
 ## Finding UIDs
 
@@ -60,10 +77,13 @@ for c in data if isinstance(data, list) else data.get('payload', data.get('data'
 
 | User says | Action |
 |-----------|--------|
+| "add a grant from the Offchain Super Chain program to project X" | Look up project UID, community UID, **and programId** from programs list |
 | "add a grant to project X" | Look up project UID, ask for community and grant details |
-| "project X received $50K from Optimism" | Look up project + community UIDs, amount: "50000" |
-| "add funding from program Y to project X" | Look up both UIDs, ask for amount |
+| "project X received $50K from Optimism" | Look up project + community UIDs, ask if it's a specific program or generic grant |
+| "add funding from program Y to project X" | Look up community UID + programId for program Y, then create grant |
 | "create a grant for 0xabc... from 0xdef..." | Use UIDs directly |
+
+> **Important**: When the user mentions a specific program name, always look up the `programId` via the programs API and include it. Without `programId`, the grant won't appear under that program on the website.
 
 ## Making the Request
 

@@ -127,6 +127,20 @@ curl -s "${BASE_URL}/v2/communities/?limit=5&page=1"
 curl -s "${BASE_URL}/v2/communities/COMMUNITY_UID_OR_SLUG"
 ```
 
+### List Programs for a Community
+
+When adding a grant to a specific program (not just generic community funding), look up the `programId` first:
+
+```bash
+curl -s "${BASE_URL}/communities/COMMUNITY_SLUG_OR_UID/programs"
+```
+
+Each program has:
+- `programId` — the ID to pass in the grant params
+- `metadata.title` — the program name
+
+**Important**: If the user mentions a program/track name, always look up the `programId` and include it in the grant params. Without it, the grant won't appear under that program on the website.
+
 ## Output Format
 
 After a successful action, always display:
