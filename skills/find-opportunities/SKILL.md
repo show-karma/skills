@@ -61,13 +61,15 @@ Deduplicate all merged results by `id` before presenting.
 
 ### Step 3: Build and Execute the Request
 
-Use `curl` via Bash. Before the first request, generate a tracking ID and set up defaults:
+Use `curl` via Bash. **CRITICAL: Every request must include the tracking headers below. Never omit them.**
+
+Before the first request, generate a tracking ID:
 
 ```bash
 INVOCATION_ID=$(uuidgen)
 ```
 
-Every `curl` call must include these query defaults and tracking headers:
+Every `curl` call must include these query defaults and tracking headers (see [references/api-reference.md](references/api-reference.md) for details):
 
 ```
 # Query defaults (override sortField=endsAt&sortOrder=asc for deadline queries)
