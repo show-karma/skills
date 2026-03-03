@@ -1,6 +1,6 @@
 ---
 name: skill-creator
-description: Create new Claude Code skills for the Karma ecosystem. Use when building, designing, or scaffolding a new skill — guides through intent capture, interview, SKILL.md writing, validation, and packaging. Specialized for grants management, funding maps, and ecosystem growth tooling.
+description: Create new Claude Code skills for the Karma ecosystem. Use when a user asks to create a skill, build a new skill, make a skill for a specific task, scaffold a skill, or design a skill. Guides through intent capture, SKILL.md writing, validation, and packaging.
 ---
 
 # Karma Skill Creator
@@ -13,7 +13,8 @@ Create well-structured Claude Code skills for the Karma ecosystem.
 2. **Plan** reusable skill contents (references, assets)
 3. **Initialize** the skill directory structure
 4. **Write** the skill (implement resources and SKILL.md)
-5. **Iterate** based on real usage
+5. **Validate** against the checklist before shipping
+6. **Iterate** based on real usage
 
 ## Step 1: Understand the Skill
 
@@ -51,7 +52,57 @@ skills/<skill-name>/
 
 ## Step 4: Write the Skill
 
-### SKILL.md Structure
+### How Skills Load (Progressive Disclosure)
+
+Skills use a three-level system — understanding this is critical for writing effective skills:
+
+1. **YAML frontmatter** — always loaded into Claude's system prompt. This is how Claude decides whether to activate the skill. Keep it lean: just `name` and `description`.
+2. **SKILL.md body** — loaded only when Claude thinks the skill is relevant. Contains the full instructions.
+3. **Linked files** (`references/`, `assets/`) — Claude navigates to these on demand. Use for detailed docs, templates, and examples.
+
+The implication: frontmatter must be self-sufficient for triggering. The body must be self-sufficient for execution. Reference files are for depth.
+
+### Writing the Description (Most Important Field)
+
+The `description` field determines whether your skill triggers. Get this right.
+
+**Structure**: [What it does] + [When to use it] + [Key capabilities]
+
+**Rules:**
+- Under 1024 characters
+- MUST include both what the skill does AND when to use it (trigger phrases)
+- Include specific phrases users would actually say
+- No XML angle brackets (`<` or `>`)
+
+**Good examples:**
+```yaml
+# Specific, with trigger phrases
+description: Analyzes grant milestone reports and generates
+  compliance summaries. Use when user asks to "review milestones",
+  "check grant progress", or "generate a milestone report".
+
+# Clear scope with negative triggers
+description: Advanced data analysis for CSV files. Use for
+  statistical modeling, regression, clustering. Do NOT use for
+  simple data exploration (use data-viz skill instead).
+```
+
+**Bad examples:**
+```yaml
+# Too vague — won't trigger reliably
+description: Helps with projects.
+
+# Missing triggers — when should Claude load this?
+description: Creates sophisticated multi-page documentation systems.
+
+# Too technical, no user-facing triggers
+description: Implements the Project entity model with hierarchical
+  relationships.
+```
+
+**Debugging tip:** Ask Claude "When would you use the [skill-name] skill?" — it will quote the description back. Adjust based on what's missing.
+
+### SKILL.md Body
 
 ```yaml
 ---
@@ -85,13 +136,40 @@ Consult these guides based on your skill's needs:
 - Setup/testing procedures
 - Information Claude already knows
 
-## Step 5: Iterate
+## Step 5: Validate Before Shipping
+
+Run through this checklist before considering the skill done:
+
+**Structure:**
+- [ ] Folder named in kebab-case
+- [ ] `SKILL.md` exists (exact casing)
+- [ ] YAML frontmatter has `---` delimiters on both sides
+- [ ] `name` field: kebab-case, no spaces, no capitals
+- [ ] No XML angle brackets (`<` `>`) anywhere in frontmatter
+- [ ] Skill name does not contain "claude" or "anthropic" (reserved)
+- [ ] No `README.md` inside the skill folder
+
+**Description:**
+- [ ] Includes WHAT the skill does
+- [ ] Includes WHEN to use it (trigger phrases)
+- [ ] Under 1024 characters
+- [ ] Trigger phrases match how users actually talk
+
+**Triggering:**
+- [ ] Triggers on obvious task requests
+- [ ] Triggers on paraphrased requests
+- [ ] Does NOT trigger on unrelated topics
+
+**Instructions:**
+- [ ] Instructions are clear and actionable
+- [ ] Critical steps use explicit language, not vague guidance
+- [ ] Error handling included for likely failure points
+- [ ] References clearly linked (not inlined)
+
+## Step 6: Iterate
 
 1. Use the skill on real tasks
 2. Note struggles or inefficiencies
 3. Update SKILL.md or resources
 
-**Primary focus areas for skills:**
-- Grants management (milestones, reporting)
-- Funding maps (cross-ecosystem funding flows)
-- Ecosystem growth (metrics, community health)
+Let the user's specifications guide the skill's domain and direction.
