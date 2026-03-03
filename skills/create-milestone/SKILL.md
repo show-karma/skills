@@ -1,6 +1,6 @@
 ---
 name: create-milestone
-description: Add a milestone to a grant on the Karma GAP protocol. Use when user says "add milestone", "create milestone", "set deliverable", "add deadline to grant", or "define grant milestones".
+description: Add a milestone to a grant on the Karma protocol. Use when user says "add milestone", "create milestone", "set deliverable", "add deadline to grant", or "define grant milestones".
 version: 0.1.0
 tags: [agent, milestone, create, grant]
 metadata:

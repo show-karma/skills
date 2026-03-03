@@ -1,6 +1,6 @@
 ---
 name: create-project-update
-description: Post a progress update on an existing Karma GAP project. Use when user says "post an update", "project progress report", "share project status", or "send project update".
+description: Post a progress update on an existing Karma project. Use when user says "post an update", "project progress report", "share project status", or "send project update".
 version: 0.1.0
 tags: [agent, project, update, progress]
 metadata:

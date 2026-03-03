@@ -1,6 +1,6 @@
 ---
 name: create-project-with-grant
-description: Create a new project with a grant in a single transaction on the Karma GAP protocol. Use when user says "create project with grant", "new project with funding", "set up project and grant together", or "register funded project".
+description: Create a new project with a grant in a single transaction on the Karma protocol. Use when user says "create project with grant", "new project with funding", "set up project and grant together", or "register funded project".
 version: 0.1.0
 tags: [agent, project, grant, create, batch]
 metadata:

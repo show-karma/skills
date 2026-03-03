@@ -1,6 +1,6 @@
 ---
 name: create-project
-description: Create a new project on the Karma GAP protocol. Use when user says "create a project", "new project", "register project", or "start a project on Karma".
+description: Create a new project on the Karma protocol. Use when user says "create a project", "new project", "register project", or "start a project on Karma".
 version: 0.1.0
 tags: [agent, project, create]
 metadata:
@@ -10,7 +10,7 @@ metadata:
 
 # Create Project
 
-Create a new project on the Karma GAP protocol. This creates two on-chain attestations: Project + ProjectDetails.
+Create a new project on the Karma protocol. This creates two on-chain attestations: Project + ProjectDetails.
 
 See [Agent API Reference](../references/agent-api.md) for auth, base URL, and error handling.
 

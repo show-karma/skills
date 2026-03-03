@@ -1,6 +1,6 @@
 ---
 name: update-project
-description: Update an existing project's details (title, description, image, links, tags) on the Karma GAP protocol. Use when user says "update project", "change project details", "edit project", or "rename project".
+description: Update an existing project's details (title, description, image, links, tags) on the Karma protocol. Use when user says "update project", "change project details", "edit project", or "rename project".
 version: 0.1.0
 tags: [agent, project, update]
 metadata:
@@ -10,7 +10,7 @@ metadata:
 
 # Update Project
 
-Update an existing project's details on the Karma GAP protocol. This creates a new ProjectDetails attestation referencing the existing project.
+Update an existing project's details on the Karma protocol. This creates a new ProjectDetails attestation referencing the existing project.
 
 See [Agent API Reference](../references/agent-api.md) for auth, base URL, and error handling.
 

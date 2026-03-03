@@ -1,6 +1,6 @@
 ---
 name: create-grant-update
-description: Post a progress update on an existing grant in the Karma GAP protocol. Use when user says "grant update", "grant progress", "report on grant", or "update my grant status".
+description: Post a progress update on an existing grant in the Karma protocol. Use when user says "grant update", "grant progress", "report on grant", or "update my grant status".
 version: 0.1.0
 tags: [agent, grant, update, progress]
 metadata:

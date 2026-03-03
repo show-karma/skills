@@ -1,6 +1,6 @@
 ---
 name: complete-milestone
-description: Mark a milestone as completed on the Karma GAP protocol. Use when user says "complete milestone", "mark milestone done", "finish milestone", "milestone completed", or "submit milestone proof".
+description: Mark a milestone as completed on the Karma protocol. Use when user says "complete milestone", "mark milestone done", "finish milestone", "milestone completed", or "submit milestone proof".
 version: 0.1.0
 tags: [agent, milestone, complete]
 metadata:

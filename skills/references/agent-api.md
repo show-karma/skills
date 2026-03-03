@@ -1,4 +1,4 @@
-# Karma GAP Agent API Reference
+# Karma Agent API Reference
 
 ## Base URL
 

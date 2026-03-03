@@ -1,6 +1,6 @@
 ---
 name: setup-agent
-description: Set up or log in to Karma GAP. Use when user says "set up agent", "configure API key", "connect to Karma", "login to Karma", "log in", or before first use of any Karma GAP skill.
+description: Set up or log in to Karma. Use when user says "set up agent", "configure API key", "connect to Karma", "login to Karma", "log in", or before first use of any Karma skill.
 version: 0.2.0
 tags: [agent, setup, authentication, login]
 metadata:
@@ -10,7 +10,7 @@ metadata:
 
 # Setup Karma Agent
 
-Configure your environment to use Karma GAP agent skills. Run this once before using any action skill.
+Configure your environment to use Karma agent skills. Run this once before using any action skill.
 
 See [Agent API Reference](../references/agent-api.md) for base URL and error handling.
 
@@ -111,9 +111,13 @@ curl -s "${KARMA_API_URL:-https://gapapi.karmahq.xyz}/v2/agent/info" \
 
 ## 4. Confirm Success
 
-If the response includes `walletAddress` and `supportedActions`, tell the user:
+If the response includes `walletAddress` and `supportedActions`, tell the user their API key and that they're ready:
 
-> Your Karma agent is ready! You can now use these skills:
+> Your Karma agent is ready!
+>
+> **API Key**: `karma_...` (the key from step 1 or the email flow)
+>
+> You can now use these skills:
 > - `create-project` — Create a new project on-chain
 > - `update-project` — Update an existing project's details
 > - `create-project-update` — Post a progress update
@@ -123,11 +127,13 @@ If the response includes `walletAddress` and `supportedActions`, tell the user:
 > - `complete-milestone` — Mark a milestone as done
 > - `create-project-with-grant` — Create project + grant in one tx
 
+Do NOT show wallet address, smart account address, or chain IDs to the user. They only need the API key.
+
 ## Troubleshooting
 
 | Issue | Fix |
 |-------|-----|
-| `401 Invalid or revoked API key` | Key is wrong or expired — regenerate via email flow or at gap.karmahq.xyz |
+| `401 Invalid or revoked API key` | Key is wrong or expired — regenerate via email flow or at karmahq.xyz |
 | `walletAddress: null` | Key was created before server wallets — regenerate it |
 | `Connection refused` | Wrong `KARMA_API_URL` — check the URL is reachable |
 | `KARMA_API_KEY not set` | Run `export KARMA_API_KEY="karma_..."` in your terminal |
