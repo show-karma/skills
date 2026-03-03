@@ -1,6 +1,11 @@
 ---
 name: skill-creator
-description: Create new Claude Code skills for the Karma ecosystem. Use when a user asks to create a skill, build a new skill, make a skill for a specific task, scaffold a skill, or design a skill. Guides through intent capture, SKILL.md writing, validation, and packaging.
+description: Create new Claude Code skills for the Karma ecosystem. Use when user says "create a skill", "build a new skill", "scaffold a skill", or "design a skill". Guides through intent capture, SKILL.md writing, validation, and packaging.
+version: 0.1.0
+tags: [meta, skill, create, scaffold]
+metadata:
+  author: Karma
+  category: meta
 ---
 
 # Karma Skill Creator
