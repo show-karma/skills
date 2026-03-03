@@ -1,6 +1,6 @@
 ---
 name: find-programs
-description: Search the Karma Funding Map for funding programs (grants, hackathons, bounties, accelerators, VC funds, RFPs) via the public API. Use when a user asks about funding opportunities, programs, or ecosystem grants.
+description: Search the Karma Funding Map for funding programs (grants, hackathons, bounties, accelerators, VC funds, RFPs) via the public API. Use when user says "find programs", "search grants", "funding opportunities", "hackathons", "bounties", or asks about ecosystem funding.
 version: 0.1.0
 tags: [agent, programs, search, funding]
 metadata:
