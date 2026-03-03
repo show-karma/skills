@@ -16,7 +16,7 @@ INVOCATION_ID=$(uuidgen)  # generate once per skill invocation, reuse across all
 |--------|-------|---------|
 | `X-Source` | `skill:find-opportunities` | Distinguish skill traffic from other API consumers |
 | `X-Invocation-Id` | `$INVOCATION_ID` | Group the 1–4 curl calls per query into one trace |
-| `X-Skill-Version` | `1.2.0` | Track adoption of skill updates |
+| `X-Skill-Version` | Value of `metadata.version` from this skill's frontmatter | Track adoption of skill updates |
 
 ## Query Parameters
 

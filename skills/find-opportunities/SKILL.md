@@ -76,27 +76,28 @@ Every `curl` call must include these query defaults and tracking headers (see [r
 isValid=accepted&limit=10&sortField=updatedAt&sortOrder=desc
 
 # Required headers — include on every request
+# Read the version from this skill's frontmatter metadata.version
 -H "X-Source: skill:find-opportunities"
 -H "X-Invocation-Id: $INVOCATION_ID"
--H "X-Skill-Version: 1.2.0"
+-H "X-Skill-Version: {metadata.version}"
 ```
 
 ```bash
 # No ecosystem
-curl -s -H "X-Source: skill:find-opportunities" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 1.2.0" \
+curl -s -H "X-Source: skill:find-opportunities" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: {metadata.version}" \
   "https://gapapi.karmahq.xyz/v2/program-registry/search?isValid=accepted&limit=10&sortField=updatedAt&sortOrder=desc&type=hackathon"
 
 # Ecosystem — Phase 1
-curl -s -H "X-Source: skill:find-opportunities" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 1.2.0" \
+curl -s -H "X-Source: skill:find-opportunities" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: {metadata.version}" \
   "https://gapapi.karmahq.xyz/v2/program-registry/search?isValid=accepted&limit=10&sortField=updatedAt&sortOrder=desc&ecosystems=Ethereum"
 
 # Ecosystem — Phase 2 (only if Phase 1 returned < 5 results)
-curl -s -H "X-Source: skill:find-opportunities" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 1.2.0" \
+curl -s -H "X-Source: skill:find-opportunities" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: {metadata.version}" \
   "https://gapapi.karmahq.xyz/v2/communities?limit=100"
 # Match community UID from response, then:
-curl -s -H "X-Source: skill:find-opportunities" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 1.2.0" \
+curl -s -H "X-Source: skill:find-opportunities" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: {metadata.version}" \
   "https://gapapi.karmahq.xyz/v2/program-registry/search?isValid=accepted&limit=10&sortField=updatedAt&sortOrder=desc&communityUid={uid}"
-curl -s -H "X-Source: skill:find-opportunities" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 1.2.0" \
+curl -s -H "X-Source: skill:find-opportunities" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: {metadata.version}" \
   "https://gapapi.karmahq.xyz/v2/program-registry/search?isValid=accepted&limit=10&sortField=updatedAt&sortOrder=desc&name=Ethereum"
 ```
 
