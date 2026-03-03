@@ -1,10 +1,22 @@
-# Funding API Reference
-
-## API
+# Karma Funding Map API Reference
 
 **Base URL**: `https://gapapi.karmahq.xyz`
 **Endpoint**: `GET /v2/program-registry/search`
 **Auth**: None (public)
+
+## Required Headers
+
+Every request must include these tracking headers:
+
+```bash
+INVOCATION_ID=$(uuidgen)  # generate once per skill invocation, reuse across all requests
+```
+
+| Header | Value | Purpose |
+|--------|-------|---------|
+| `X-Source` | `skill:find-opportunities` | Distinguish skill traffic from other API consumers |
+| `X-Invocation-Id` | `$INVOCATION_ID` | Group the 1–4 curl calls per query into one trace |
+| `X-Skill-Version` | Value of `metadata.version` from this skill's frontmatter | Track adoption of skill updates |
 
 ## Query Parameters
 
@@ -46,19 +58,7 @@ Omitting `type` returns all types. Multiple types: `type=grant,hackathon`.
 
 ```json
 {
-  "programs": [{
-    "id", "programId", "type", "name", "isValid", "isActive", "isOnKarma",
-    "deadline", "submissionUrl",
-    "communities": [{ "uid", "name", "slug", "imageUrl" }],
-    "createdAt", "updatedAt",
-    "metadata": {
-      "title", "description", "shortDescription", "status",
-      "startsAt", "endsAt", "categories", "ecosystems", "networks",
-      "grantTypes", "organizations", "minGrantSize", "maxGrantSize",
-      "programBudget", "website", "projectTwitter", "anyoneCanJoin",
-      "socialLinks": { "twitter", "discord", "website", "orgWebsite", "grantsSite" }
-    }
-  }],
+  "programs": [{ "id", "programId", "type", "name", "isValid", "isActive", "isOnKarma", "deadline", "submissionUrl", "communities": [{ "uid", "name", "slug", "imageUrl" }], "createdAt", "updatedAt", "metadata": { "title", "description", "shortDescription", "status", "startsAt", "endsAt", "categories", "ecosystems", "networks", "grantTypes", "organizations", "minGrantSize", "maxGrantSize", "programBudget", "website", "projectTwitter", "anyoneCanJoin", "socialLinks": { "twitter", "discord", "website", "orgWebsite", "grantsSite" } } }],
   "count", "totalPages", "currentPage", "hasNext", "hasPrevious"
 }
 ```
@@ -82,24 +82,13 @@ Quadratic Funding, Ecosystem Fund, Developer Grant,
 Research, Tool
 ```
 
-## Field Mapping
+## Communities Endpoint
 
-- **Name**: `metadata.title` (fall back to `name`)
-- **Type label**: `type` in brackets: `[grant]`, `[hackathon]`, `[bounty]`, `[accelerator]`, `[vc_fund]`, `[rfp]`
-- **Ecosystem**: `metadata.ecosystems` joined with `, ` (fall back to `communities[0].name`)
-- **Description**: `metadata.description` truncated to ~120 chars
+`GET /v2/communities?limit=100`
 
-## Type-Specific Detail Line
+Response:
+```json
+{ "payload": [{ "uid": "0x...", "details": { "name": "GEN Ukraine", "slug": "gen-ukraine-community" } }, ...] }
+```
 
-- **grant**: `Budget: {programBudget} | Status: {status}`
-- **hackathon**: `Dates: {startsAt}–{endsAt} | Deadline: {deadline}`
-- **bounty**: `Reward: {programBudget} | Difficulty: {difficulty if available}`
-- **accelerator**: `Stage: {stage if available} | Deadline: {deadline}`
-- **vc_fund**: `Check size: {minGrantSize}–{maxGrantSize} | Stage: {stage if available}`
-- **rfp**: `Budget: {programBudget} | Org: {organizations[0]} | Deadline: {deadline}`
-- **fallback**: `Budget: {programBudget} | Status: {status}`
-
-## Common Fields
-
-- **Deadline**: `deadline` (top-level) formatted as `Mon DD, YYYY` (or "Rolling" if null)
-- **Apply link**: `submissionUrl` (top-level), fall back to `metadata.socialLinks.grantsSite` or `metadata.website` or `metadata.socialLinks.website` (first non-empty)
+Slugs are not guessable (e.g., "GEN Ukraine" → `gen-ukraine-community`), so always fetch the full list and match by name (case-insensitive, partial match).
