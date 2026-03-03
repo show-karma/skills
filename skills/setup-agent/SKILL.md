@@ -24,7 +24,28 @@ Check if `KARMA_API_KEY` is already set:
 > Do you already have a Karma API key, or would you like to create one?
 
 - **"I have one"** → ask for it, skip to [Set Your API Key](#1-set-your-api-key)
-- **"Create one" / "Login"** → go to [Create API Key via Email](#create-api-key-via-email)
+- **"Quick start" / "Generate one"** → go to [Quick Start — No Account Needed](#quick-start--no-account-needed)
+- **"Login" / "Email"** → go to [Create API Key via Email](#create-api-key-via-email)
+
+## Quick Start — No Account Needed
+
+The fastest way to get started. No email, no login, no existing account required.
+
+```bash
+BASE_URL="${KARMA_API_URL:-https://gapapi.karmahq.xyz}"
+
+curl -s -X POST "${BASE_URL}/v2/agent/register" \
+  -H "Content-Type: application/json"
+```
+
+**Expected response:**
+```json
+{ "key": "karma_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" }
+```
+
+The key is shown only once. Proceed immediately to [Set Your API Key](#1-set-your-api-key).
+
+> **Note**: Projects created with this method get their own wallet. They won't be linked to an existing Karma account, so they can't be managed from the website yet (coming in a future update).
 
 ## Create API Key via Email
 
