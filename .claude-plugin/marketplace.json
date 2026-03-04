@@ -1,27 +1,32 @@
 {
   "name": "karma-skills",
   "owner": {
-    "name": "Karma"
+    "name": "Karma",
+    "url": "https://karmahq.xyz"
   },
   "metadata": {
-    "description": "Claude Code skills for the Karma ecosystem",
-    "version": "0.2.0"
+    "description": "Agent skills for the Karma ecosystem — manage projects, grants, milestones, and discover funding opportunities",
+    "version": "0.3.0"
   },
   "plugins": [
     {
       "name": "find-opportunities",
       "description": "Search the Karma Funding Map for grants, hackathons, bounties, accelerators, VC funds, and RFPs",
+      "version": "1.2.0",
       "source": "./",
       "strict": false,
+      "tags": ["discovery", "funding", "grants"],
       "skills": [
         "./skills/find-opportunities"
       ]
     },
     {
       "name": "karma-agent",
-      "description": "Manage projects, grants, milestones, and updates on the Karma protocol via the agent API",
+      "description": "Manage projects, grants, milestones, and updates on the Karma protocol via natural language",
+      "version": "0.2.0",
       "source": "./",
       "strict": false,
+      "tags": ["agent", "projects", "grants", "attestations"],
       "skills": [
         "./skills/setup-agent",
         "./skills/create-project",
