@@ -19,13 +19,13 @@ See [Agent API Reference](../references/agent-api.md) for base URL and error han
 Check if `KARMA_API_KEY` is already set:
 
 - **If set** → skip to [Verify Configuration](#3-verify-configuration)
-- **If not set** → ask the user:
+- **If not set** → use the `AskUserQuestion` tool with these options:
+  - Question: "You need a Karma API key to continue. How would you like to set it up?"
+  - Options: ["Quick start — Generate instantly (no account needed)", "Email login — Link to existing Karma account", "I already have a key"]
 
-> Do you already have a Karma API key, or would you like to create one?
-
-- **"I have one"** → ask for it, skip to [Set Your API Key](#1-set-your-api-key)
-- **"Quick start" / "Generate one"** → go to [Quick Start — No Account Needed](#quick-start--no-account-needed)
-- **"Login" / "Email"** → go to [Create API Key via Email](#create-api-key-via-email)
+  - **Quick start** → go to [Quick Start — No Account Needed](#quick-start--no-account-needed)
+  - **Email login** → go to [Create API Key via Email](#create-api-key-via-email)
+  - **I already have a key** → ask for the key, skip to [Save Your API Key](#1-save-your-api-key)
 
 ## Quick Start — No Account Needed
 
@@ -35,7 +35,7 @@ The fastest way to get started. No email, no login, no existing account required
 BASE_URL="${KARMA_API_URL:-https://gapapi.karmahq.xyz}"
 
 curl -s -X POST "${BASE_URL}/v2/agent/register" \
-  -H "Content-Type: application/json"
+  -H "Content-Type: application/json" -d '{}'
 ```
 
 **Expected response:**
@@ -99,7 +99,32 @@ curl -s -X POST "${BASE_URL}/v2/api-keys/auth/verify" \
 | `409 Active key already exists` | User already has a key | Tell them to use their existing key or revoke it from the website |
 | `429 Too many requests` | Rate limited | Wait and try again |
 
-## 1. Set Your API Key
+## 1. Save Your API Key
+
+After obtaining the key, **ask permission** to save it permanently:
+
+> Would you like me to save your API key to your shell config so you don't have to paste it every time?
+
+If yes, detect the user's shell and append the export:
+
+```bash
+# Detect shell config file
+if [ -f "$HOME/.zshrc" ]; then
+  SHELL_RC="$HOME/.zshrc"
+elif [ -f "$HOME/.bashrc" ]; then
+  SHELL_RC="$HOME/.bashrc"
+fi
+
+# Append only if not already present
+grep -q 'KARMA_API_KEY' "$SHELL_RC" || echo '\n# Karma API Key\nexport KARMA_API_KEY="karma_..."' >> "$SHELL_RC"
+
+# Also export for current session
+export KARMA_API_KEY="karma_..."
+```
+
+If the key already exists in the file, replace the old value instead of appending a duplicate.
+
+If the user declines, just set it for the current session:
 
 ```bash
 export KARMA_API_KEY="karma_your_key_here"
@@ -139,14 +164,8 @@ If the response includes `walletAddress` and `supportedActions`, tell the user t
 > **API Key**: `karma_...` (the key from step 1 or the email flow)
 >
 > You can now use these skills:
-> - `create-project` — Create a new project on-chain
-> - `update-project` — Update an existing project's details
-> - `create-project-update` — Post a progress update
-> - `create-grant` — Add funding to a project
-> - `create-grant-update` — Post a grant progress update
-> - `create-milestone` — Add a milestone to a grant
-> - `complete-milestone` — Mark a milestone as done
-> - `create-project-with-grant` — Create project + grant in one tx
+> - `project-manager` — Create and manage projects, grants, milestones, and updates
+> - `find-funding-opportunities` — Search for grants, hackathons, bounties, and more
 
 Do NOT show wallet address, smart account address, or chain IDs to the user. They only need the API key.
 
