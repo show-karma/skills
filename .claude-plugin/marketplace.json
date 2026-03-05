@@ -21,8 +21,8 @@
       ]
     },
     {
-      "name": "karma-agent",
-      "description": "Manage projects, grants, milestones, and updates on the Karma protocol via natural language",
+      "name": "project-manager",
+      "description": "Manage projects, grants, milestones, and updates on the Karma protocol",
       "version": "0.2.0",
       "source": "./",
       "strict": false,

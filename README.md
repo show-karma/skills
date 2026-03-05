@@ -24,15 +24,15 @@ The `SKILL.md` file contains YAML frontmatter (name, description, version, tags)
 
 ## Available Skills
 
-### Discovery
+### find-opportunities
 
 | Skill | Description |
 |-------|-------------|
 | [`find-opportunities`](skills/find-opportunities/) | Search the Karma Funding Map for grants, hackathons, bounties, accelerators, VC funds, and RFPs |
 
-### Agent Actions
+### project-manager
 
-These skills use the Karma Agent API to create on-chain attestations via a server-managed wallet. No gas fees, no browser wallet needed.
+These skills use the Karma Agent API to create on-chain attestations via a server-side wallet. No gas fees, no browser wallet needed.
 
 | Skill | Description |
 |-------|-------------|
@@ -49,7 +49,7 @@ These skills use the Karma Agent API to create on-chain attestations via a serve
 ## How It Works
 
 ```
-You (natural language)
+You
   ↓
 AI Agent (picks the right skill)
   ↓
@@ -63,7 +63,7 @@ karmahq.xyz (visible on the web)
 ```
 
 - **No gas fees** — transactions are sponsored via account abstraction
-- **No browser wallet** — your agent gets a server-managed wallet
+- **No browser wallet** — your agent gets a server-side wallet
 - **On-chain** — every action creates a verifiable [EAS attestation](https://docs.attest.sh/)
 - **Client-agnostic** — works with any AI agent that supports the Skills Standard
 
