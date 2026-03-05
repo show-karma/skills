@@ -6,11 +6,11 @@
   },
   "metadata": {
     "description": "Agent skills for the Karma ecosystem — manage projects, grants, milestones, and discover funding opportunities",
-    "version": "0.3.0"
+    "version": "1.0.0"
   },
   "plugins": [
     {
-      "name": "find-funding-opportunities",
+      "name": "Find Funding Opportunities",
       "description": "Search the Karma Funding Map for grants, hackathons, bounties, accelerators, VC funds, and RFPs",
       "version": "1.2.0",
       "source": "./",
@@ -21,22 +21,26 @@
       ]
     },
     {
-      "name": "project-manager",
-      "description": "Manage projects, grants, milestones, and updates on the Karma protocol",
-      "version": "0.2.0",
+      "name": "Project Manager",
+      "description": "Create and manage projects, grants, milestones, and updates on the Karma protocol",
+      "version": "1.0.0",
       "source": "./",
       "strict": false,
       "tags": ["agent", "projects", "grants", "attestations"],
       "skills": [
         "./skills/setup-agent",
-        "./skills/create-project",
-        "./skills/update-project",
-        "./skills/create-project-update",
-        "./skills/create-grant",
-        "./skills/create-grant-update",
-        "./skills/create-milestone",
-        "./skills/complete-milestone",
-        "./skills/create-project-with-grant"
+        "./skills/project-manager"
+      ]
+    },
+    {
+      "name": "Skill Creator",
+      "description": "Create new Claude Code skills for the Karma ecosystem",
+      "version": "0.1.0",
+      "source": "./",
+      "strict": false,
+      "tags": ["development", "skills"],
+      "skills": [
+        "./skills/skill-creator"
       ]
     }
   ]
