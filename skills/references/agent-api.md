@@ -41,7 +41,7 @@ curl -s -X POST "${BASE_URL}/v2/agent/execute" \
 ```json
 {
   "transactionHash": "0x...",
-  "chainId": 10,
+  "chainId": 8453,
   "smartAccountAddress": "0x..."
 }
 ```
@@ -54,23 +54,11 @@ Attestations are automatically indexed by the system after a successful transact
 
 Returns the agent's wallet address, smart account, supported chains, and supported actions.
 
-## Supported Chains
+## Supported Chain
 
-| Chain | ID |
-|-------|-----|
-| Optimism | 10 |
-| Polygon | 137 |
-| Lisk | 1135 |
-| Sei | 1329 |
-| Base | 8453 |
-| Arbitrum | 42161 |
-| Celo | 42220 |
-| Base Sepolia | 84532 |
-| Scroll | 534352 |
-| Sepolia | 11155111 |
-| OP Sepolia | 11155420 |
+All agent actions run on **Base** (chain ID `8453`). Always use `"chainId": 8453` in requests.
 
-When the user doesn't specify a chain, ask which chain they want. For testnets, suggest OP Sepolia (11155420).
+If the user mentions a different chain, let them know that Karma currently supports Base only for agent actions.
 
 ## Error Responses
 
@@ -83,7 +71,13 @@ When the user doesn't specify a chain, ask which chain they want. For testnets, 
 
 ## API Documentation
 
-Full Swagger docs: `{BASE_URL}/v2/docs/static/index.html`
+Full Swagger/OpenAPI docs are available at:
+
+```
+https://gapapi.karmahq.xyz/v2/docs/static/index.html
+```
+
+Use this reference to discover all available endpoints, request/response schemas, and query parameters. When you need to fetch data (projects, communities, grants, etc.) and the specific endpoint isn't covered in these skills, check the API docs for the full list of routes.
 
 ## Looking Up Data
 
@@ -149,6 +143,5 @@ After a successful action, always display:
 [Action] completed successfully!
 
 Transaction: {transactionHash}
-Chain: {chainName} ({chainId})
-Smart Account: {smartAccountAddress}
+Chain: Base (8453)
 ```

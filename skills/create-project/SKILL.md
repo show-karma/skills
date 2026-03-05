@@ -24,7 +24,7 @@ Gather from the user before calling the API:
 
 | Field | Required | Description |
 |-------|----------|-------------|
-| `chainId` | Yes | Which blockchain (see supported chains in reference) |
+| `chainId` | Yes | Always `8453` (Base) |
 | `title` | Yes | Project name (1-200 chars) |
 | `description` | Yes | Project description (1-5000 chars) |
 | `imageURL` | No | Project logo/image URL |
@@ -35,12 +35,12 @@ Gather from the user before calling the API:
 
 | User says | Action |
 |-----------|--------|
-| "create a project" | Ask for title, description, chain |
-| "create a project called X" | Use X as title, ask for description and chain |
-| "create a DeFi project on Optimism" | tags: ["defi"], chainId: 10, ask for title/description |
+| "create a project" | Ask for title and description |
+| "create a project called X" | Use X as title, ask for description |
+| "create a DeFi project" | tags: ["defi"], ask for title/description |
 | "new project on Base" | chainId: 8453, ask for title/description |
 
-If the user doesn't specify a chain, ask. For testing, suggest OP Sepolia (11155420).
+Always use `chainId: 8453` (Base). If the user mentions a different chain, let them know Karma currently supports Base only for agent actions.
 
 ## Making the Request
 
@@ -53,7 +53,7 @@ curl -s -X POST "${BASE_URL}/v2/agent/execute" \
   -d '{
     "action": "createProject",
     "params": {
-      "chainId": 10,
+      "chainId": 8453,
       "title": "My Project",
       "description": "Project description",
       "imageURL": "https://example.com/logo.png",
@@ -75,6 +75,6 @@ Display the result using the output format from the reference. The project will 
 | Scenario | Response |
 |----------|----------|
 | Missing title or description | Ask the user for the missing field |
-| Chain not specified | Ask which chain, suggest options |
+| Chain not specified | Use Base (8453) — it's the only supported chain |
 | API key not set | Invoke `/setup-agent` skill automatically |
 | Title too long (>200) | Truncate and confirm with user |

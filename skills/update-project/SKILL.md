@@ -22,7 +22,7 @@ If `KARMA_API_KEY` is not set in the environment, invoke the `/setup-agent` skil
 
 | Field | Required | Description |
 |-------|----------|-------------|
-| `chainId` | Yes | Chain where the project lives |
+| `chainId` | Yes | Always `8453` (Base) |
 | `projectUID` | Yes | The project's attestation UID (bytes32 hex string) |
 | `title` | Yes | Updated project name (1-200 chars) |
 | `description` | Yes | Updated description (1-5000 chars) |
@@ -66,7 +66,7 @@ curl -s -X POST "${BASE_URL}/v2/agent/execute" \
   -d '{
     "action": "updateProjectDetails",
     "params": {
-      "chainId": 10,
+      "chainId": 8453,
       "projectUID": "0x1234...abcd",
       "title": "Updated Project Name",
       "description": "Updated description with new details",

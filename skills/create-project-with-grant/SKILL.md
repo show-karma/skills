@@ -26,7 +26,7 @@ If `KARMA_API_KEY` is not set in the environment, invoke the `/setup-agent` skil
 
 | Field | Required | Description |
 |-------|----------|-------------|
-| `chainId` | Yes | Which blockchain |
+| `chainId` | Yes | Always `8453` (Base) |
 | `title` | Yes | Project name (1-200 chars) |
 | `description` | Yes | Project description (1-5000 chars) |
 | `imageURL` | No | Project logo/image URL |
@@ -49,7 +49,7 @@ If `KARMA_API_KEY` is not set in the environment, invoke the `/setup-agent` skil
 If the user provides a program/track name but not a `programId`, look it up after finding the community UID:
 
 ```bash
-# Accepts community slug (e.g., "optimism") or UID (0x...)
+# Accepts community slug (e.g., "base") or UID (0x...)
 curl -s "${BASE_URL}/communities/${COMMUNITY_SLUG_OR_UID}/programs" | python3 -c "
 import sys, json
 data = json.load(sys.stdin)
@@ -79,10 +79,9 @@ for c in data if isinstance(data, list) else data.get('payload', data.get('data'
 | User says | Action |
 |-----------|--------|
 | "create a project with a grant from the Offchain Super Chain program" | Look up community UID + programId, ask for project/grant details |
-| "create a project with a grant from Optimism" | Look up community UID, ask if it's a specific program or generic grant |
+| "create a project with a grant from Base" | Look up community UID, ask if it's a specific program or generic grant |
 | "new project X funded by Y for $50K" | title: X, community: Y, amount: "50000" |
 | "create project and grant together" | Ask for all details |
-| "set up project X with Arbitrum grant" | Look up community, ask for remaining details |
 
 ## Making the Request
 
@@ -95,17 +94,17 @@ curl -s -X POST "${BASE_URL}/v2/agent/execute" \
   -d '{
     "action": "createProjectWithGrant",
     "params": {
-      "chainId": 10,
+      "chainId": 8453,
       "title": "DeFi Protocol",
       "description": "A decentralized lending protocol",
       "links": [{ "type": "github", "url": "https://github.com/defi-protocol" }],
       "tags": ["defi", "lending"],
       "communityUID": "0xcommunity...uid",
       "grant": {
-        "title": "Optimism Builder Grant",
+        "title": "Builder Grant",
         "description": "Funding for protocol development",
         "amount": "50000",
-        "proposalURL": "https://gov.optimism.io/proposal/123"
+        "proposalURL": "https://example.com/proposal/123"
       }
     }
   }'
@@ -119,9 +118,7 @@ Display the result. Note this created 4 attestations in one tx:
 Project + Grant created successfully!
 
 Transaction: 0x...
-Chain: Optimism (10)
-Smart Account: 0x...
-Attestations: Project, ProjectDetails, Grant, GrantDetails (4 in 1 tx)
+Chain: Base (8453)
 ```
 
 The project and grant will be automatically indexed by the system.

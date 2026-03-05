@@ -22,7 +22,7 @@ If `KARMA_API_KEY` is not set in the environment, invoke the `/setup-agent` skil
 
 | Field | Required | Description |
 |-------|----------|-------------|
-| `chainId` | Yes | Chain where the project lives |
+| `chainId` | Yes | Always `8453` (Base) |
 | `projectUID` | Yes | The project's attestation UID |
 | `communityUID` | Yes | The community/program UID (bytes32) that funded the project |
 | `title` | Yes | Grant title (1-200 chars) |
@@ -36,7 +36,7 @@ If `KARMA_API_KEY` is not set in the environment, invoke the `/setup-agent` skil
 If the user provides a program/track name but not a `programId`, look it up:
 
 ```bash
-# Accepts community slug (e.g., "optimism") or UID (0x...)
+# Accepts community slug (e.g., "base") or UID (0x...)
 curl -s "${BASE_URL}/communities/${COMMUNITY_SLUG_OR_UID}/programs" | python3 -c "
 import sys, json
 data = json.load(sys.stdin)
@@ -79,7 +79,7 @@ for c in data if isinstance(data, list) else data.get('payload', data.get('data'
 |-----------|--------|
 | "add a grant from the Offchain Super Chain program to project X" | Look up project UID, community UID, **and programId** from programs list |
 | "add a grant to project X" | Look up project UID, ask for community and grant details |
-| "project X received $50K from Optimism" | Look up project + community UIDs, ask if it's a specific program or generic grant |
+| "project X received $50K from community Y" | Look up project + community UIDs, ask if it's a specific program or generic grant |
 | "add funding from program Y to project X" | Look up community UID + programId for program Y, then create grant |
 | "create a grant for 0xabc... from 0xdef..." | Use UIDs directly |
 
@@ -96,13 +96,13 @@ curl -s -X POST "${BASE_URL}/v2/agent/execute" \
   -d '{
     "action": "createGrant",
     "params": {
-      "chainId": 10,
+      "chainId": 8453,
       "projectUID": "0xproject...",
       "communityUID": "0xcommunity...",
-      "title": "Optimism Builder Grant",
+      "title": "Builder Grant",
       "description": "Funding for protocol development",
       "amount": "50000",
-      "proposalURL": "https://gov.optimism.io/proposal/123"
+      "proposalURL": "https://example.com/proposal/123"
     }
   }'
 ```

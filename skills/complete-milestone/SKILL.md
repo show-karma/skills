@@ -22,7 +22,7 @@ If `KARMA_API_KEY` is not set in the environment, invoke the `/setup-agent` skil
 
 | Field | Required | Description |
 |-------|----------|-------------|
-| `chainId` | Yes | Chain where the milestone lives |
+| `chainId` | Yes | Always `8453` (Base) |
 | `milestoneUID` | Yes | The milestone's attestation UID |
 | `reason` | Yes | Completion explanation (1-5000 chars) |
 | `proofOfWork` | No | URL to proof (demo, PR, deployment, etc.) |
@@ -76,7 +76,7 @@ curl -s -X POST "${BASE_URL}/v2/agent/execute" \
   -d '{
     "action": "completeMilestone",
     "params": {
-      "chainId": 10,
+      "chainId": 8453,
       "milestoneUID": "0xmilestone...uid",
       "reason": "All deliverables completed. Smart contracts deployed and audited.",
       "proofOfWork": "https://github.com/myproject/releases/tag/v2.0"

@@ -22,7 +22,7 @@ If `KARMA_API_KEY` is not set in the environment, invoke the `/setup-agent` skil
 
 | Field | Required | Description |
 |-------|----------|-------------|
-| `chainId` | Yes | Chain where the grant lives |
+| `chainId` | Yes | Always `8453` (Base) |
 | `grantUID` | Yes | The grant's attestation UID |
 | `title` | Yes | Milestone title (1-200 chars) |
 | `description` | Yes | Milestone description (1-5000 chars) |
@@ -87,7 +87,7 @@ curl -s -X POST "${BASE_URL}/v2/agent/execute" \
   -d '{
     "action": "createMilestone",
     "params": {
-      "chainId": 10,
+      "chainId": 8453,
       "grantUID": "0xgrant...uid",
       "title": "Ship Protocol v2",
       "description": "Deploy the v2 smart contracts and frontend",

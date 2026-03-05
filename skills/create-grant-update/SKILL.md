@@ -22,7 +22,7 @@ If `KARMA_API_KEY` is not set in the environment, invoke the `/setup-agent` skil
 
 | Field | Required | Description |
 |-------|----------|-------------|
-| `chainId` | Yes | Chain where the grant lives |
+| `chainId` | Yes | Always `8453` (Base) |
 | `grantUID` | Yes | The grant's attestation UID |
 | `title` | Yes | Update title (1-200 chars) |
 | `text` | Yes | Update content (1-10000 chars) |
@@ -59,7 +59,7 @@ for g in grants:
 |-----------|--------|
 | "post a grant update on project X" | Look up project grants, ask which grant if multiple |
 | "update grant 0xabc... with progress" | Use UID directly, ask for title and text |
-| "report progress on my Optimism grant" | Look up by project + community name |
+| "report progress on my grant" | Look up by project + community name |
 | "we finished phase 1 of the grant" | Ask which project/grant, use as update content |
 
 ## Making the Request
@@ -73,7 +73,7 @@ curl -s -X POST "${BASE_URL}/v2/agent/execute" \
   -d '{
     "action": "createGrantUpdate",
     "params": {
-      "chainId": 10,
+      "chainId": 8453,
       "grantUID": "0xgrant...uid",
       "title": "Phase 1 Complete",
       "text": "We completed all Phase 1 deliverables including..."
