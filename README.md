@@ -24,27 +24,13 @@ The `SKILL.md` file contains YAML frontmatter (name, description, version, tags)
 
 ## Available Skills
 
-### find-funding-opportunities
-
 | Skill | Description |
 |-------|-------------|
-| [`find-funding-opportunities`](skills/find-funding-opportunities/) | Search the Karma Funding Map for grants, hackathons, bounties, accelerators, VC funds, and RFPs |
+| [`setup-agent`](skills/setup-agent/) | Register and get your API key — quick start (no account), email login, or manual. Saves key to shell config. |
+| [`project-manager`](skills/project-manager/) | Create and manage projects, grants, milestones, and updates on-chain. Handles all attestation actions in one skill. |
+| [`find-funding-opportunities`](skills/find-funding-opportunities/) | Search the Karma Funding Map for grants, hackathons, bounties, accelerators, VC funds, and RFPs. |
 
-### project-manager
-
-These skills use the Karma Agent API to create on-chain attestations via a server-side wallet. No gas fees, no browser wallet needed.
-
-| Skill | Description |
-|-------|-------------|
-| [`setup-agent`](skills/setup-agent/) | Register and get your API key — quick start (no account), email login, or manual |
-| [`create-project`](skills/create-project/) | Create a new project on-chain |
-| [`update-project`](skills/update-project/) | Update a project's title, description, tags, or links |
-| [`create-project-update`](skills/create-project-update/) | Post a progress update on a project |
-| [`create-grant`](skills/create-grant/) | Attach a grant to a project |
-| [`create-grant-update`](skills/create-grant-update/) | Post a progress update on a grant |
-| [`create-milestone`](skills/create-milestone/) | Add a milestone to a grant |
-| [`complete-milestone`](skills/complete-milestone/) | Mark a milestone as completed with proof of work |
-| [`create-project-with-grant`](skills/create-project-with-grant/) | Create a project and grant in a single transaction |
+All on-chain skills use the Karma Agent API with a server-side wallet. No gas fees, no browser wallet needed.
 
 ## How It Works
 
