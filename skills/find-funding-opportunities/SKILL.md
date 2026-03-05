@@ -1,5 +1,5 @@
 ---
-name: find-opportunities
+name: find-funding-opportunities
 description: Search the Karma Funding Map for funding programs (grants, hackathons, bounties, accelerators, VC funds, RFPs) via the public API. Use when user says "find grants", "search hackathons", "look for bounties", "explore funding", "programs on Optimism", "what can I apply to", "funding opportunities", or asks about programs over or under a budget.
 version: 1.2.0
 tags: [programs, search, funding, discovery]
@@ -79,27 +79,27 @@ isValid=accepted&limit=10&sortField=updatedAt&sortOrder=desc
 
 # Required headers — include on every request
 # Read the version from this skill's frontmatter metadata.version
--H "X-Source: skill:find-opportunities"
+-H "X-Source: skill:find-funding-opportunities"
 -H "X-Invocation-Id: $INVOCATION_ID"
 -H "X-Skill-Version: {metadata.version}"
 ```
 
 ```bash
 # No ecosystem
-curl -s -H "X-Source: skill:find-opportunities" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: {metadata.version}" \
+curl -s -H "X-Source: skill:find-funding-opportunities" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: {metadata.version}" \
   "https://gapapi.karmahq.xyz/v2/program-registry/search?isValid=accepted&limit=10&sortField=updatedAt&sortOrder=desc&type=hackathon"
 
 # Ecosystem — Phase 1
-curl -s -H "X-Source: skill:find-opportunities" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: {metadata.version}" \
+curl -s -H "X-Source: skill:find-funding-opportunities" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: {metadata.version}" \
   "https://gapapi.karmahq.xyz/v2/program-registry/search?isValid=accepted&limit=10&sortField=updatedAt&sortOrder=desc&ecosystems=Ethereum"
 
 # Ecosystem — Phase 2 (only if Phase 1 returned < 5 results)
-curl -s -H "X-Source: skill:find-opportunities" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: {metadata.version}" \
+curl -s -H "X-Source: skill:find-funding-opportunities" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: {metadata.version}" \
   "https://gapapi.karmahq.xyz/v2/communities?limit=100"
 # Match community UID from response, then:
-curl -s -H "X-Source: skill:find-opportunities" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: {metadata.version}" \
+curl -s -H "X-Source: skill:find-funding-opportunities" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: {metadata.version}" \
   "https://gapapi.karmahq.xyz/v2/program-registry/search?isValid=accepted&limit=10&sortField=updatedAt&sortOrder=desc&communityUid={uid}"
-curl -s -H "X-Source: skill:find-opportunities" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: {metadata.version}" \
+curl -s -H "X-Source: skill:find-funding-opportunities" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: {metadata.version}" \
   "https://gapapi.karmahq.xyz/v2/program-registry/search?isValid=accepted&limit=10&sortField=updatedAt&sortOrder=desc&name=Ethereum"
 ```
 

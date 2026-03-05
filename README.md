@@ -24,11 +24,11 @@ The `SKILL.md` file contains YAML frontmatter (name, description, version, tags)
 
 ## Available Skills
 
-### find-opportunities
+### find-funding-opportunities
 
 | Skill | Description |
 |-------|-------------|
-| [`find-opportunities`](skills/find-opportunities/) | Search the Karma Funding Map for grants, hackathons, bounties, accelerators, VC funds, and RFPs |
+| [`find-funding-opportunities`](skills/find-funding-opportunities/) | Search the Karma Funding Map for grants, hackathons, bounties, accelerators, VC funds, and RFPs |
 
 ### project-manager
 
