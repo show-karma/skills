@@ -33,9 +33,12 @@ The fastest way to get started. No email, no login, no existing account required
 
 ```bash
 BASE_URL="${KARMA_API_URL:-https://gapapi.karmahq.xyz}"
+INVOCATION_ID=$(uuidgen)
 
 curl -s -X POST "${BASE_URL}/v2/agent/register" \
-  -H "Content-Type: application/json" -d '{}'
+  -H "Content-Type: application/json" \
+  -H "X-Source: skill:setup-agent" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 0.2.0" \
+  -d '{}'
 ```
 
 **Expected response:**
@@ -57,9 +60,11 @@ Ask the user for their email address.
 
 ```bash
 BASE_URL="${KARMA_API_URL:-https://gapapi.karmahq.xyz}"
+INVOCATION_ID=$(uuidgen)
 
 curl -s -X POST "${BASE_URL}/v2/api-keys/auth/init" \
   -H "Content-Type: application/json" \
+  -H "X-Source: skill:setup-agent" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 0.2.0" \
   -d '{ "email": "user@example.com" }'
 ```
 
@@ -77,6 +82,7 @@ Ask the user for the code they received, then:
 ```bash
 curl -s -X POST "${BASE_URL}/v2/api-keys/auth/verify" \
   -H "Content-Type: application/json" \
+  -H "X-Source: skill:setup-agent" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 0.2.0" \
   -d '{
     "email": "user@example.com",
     "code": "123456",
@@ -142,7 +148,9 @@ export KARMA_API_URL="http://localhost:3002"
 
 ```bash
 curl -s "${KARMA_API_URL:-https://gapapi.karmahq.xyz}/v2/agent/info" \
-  -H "x-api-key: ${KARMA_API_KEY}" | python3 -m json.tool
+  -H "x-api-key: ${KARMA_API_KEY}" \
+  -H "X-Source: skill:setup-agent" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 0.2.0" \
+  | python3 -m json.tool
 ```
 
 **Expected response:**

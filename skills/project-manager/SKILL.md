@@ -17,6 +17,15 @@ Full API docs: `https://gapapi.karmahq.xyz/v2/docs/static/index.html`
 ```bash
 BASE_URL="${KARMA_API_URL:-https://gapapi.karmahq.xyz}"
 API_KEY="${KARMA_API_KEY}"
+INVOCATION_ID=$(uuidgen)
+```
+
+**CRITICAL: Every `curl` call must include these tracking headers:**
+
+```bash
+-H "X-Source: skill:project-manager"
+-H "X-Invocation-Id: $INVOCATION_ID"
+-H "X-Skill-Version: 1.0.0"
 ```
 
 ---
@@ -34,7 +43,9 @@ Otherwise use the `AskUserQuestion` tool with these options:
 
 ```bash
 curl -s -X POST "${BASE_URL}/v2/agent/register" \
-  -H "Content-Type: application/json" -d '{}'
+  -H "Content-Type: application/json" \
+  -H "X-Source: skill:project-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 1.0.0" \
+  -d '{}'
 ```
 
 Returns `{ "apiKey": "karma_..." }` — shown only once.
@@ -87,7 +98,9 @@ export KARMA_API_KEY="karma_..."
 ### Verify
 
 ```bash
-curl -s "${BASE_URL}/v2/agent/info" -H "x-api-key: ${API_KEY}"
+curl -s "${BASE_URL}/v2/agent/info" \
+  -H "x-api-key: ${API_KEY}" \
+  -H "X-Source: skill:project-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 1.0.0"
 ```
 
 If response includes `walletAddress` and `supportedActions` → ready. Do NOT show wallet/chain details to the user. Tell them:
@@ -104,6 +117,7 @@ All actions use:
 curl -s -X POST "${BASE_URL}/v2/agent/execute" \
   -H "Content-Type: application/json" \
   -H "x-api-key: ${API_KEY}" \
+  -H "X-Source: skill:project-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 1.0.0" \
   -d '{ "action": "<ACTION>", "params": { ... } }'
 ```
 
@@ -334,7 +348,8 @@ After success, use the same post-creation message as `createProject`.
 ### Find a Project
 
 ```bash
-curl -s "${BASE_URL}/v2/projects?q=SEARCH_TERM&limit=5&page=1"
+curl -s -H "X-Source: skill:project-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 1.0.0" \
+  "${BASE_URL}/v2/projects?q=SEARCH_TERM&limit=5&page=1"
 ```
 
 Each result has: `uid`, `chainID`, `details.title`, `details.slug`, `details.description`
@@ -342,13 +357,15 @@ Each result has: `uid`, `chainID`, `details.title`, `details.slug`, `details.des
 ### Get Project by UID or Slug
 
 ```bash
-curl -s "${BASE_URL}/v2/projects/PROJECT_UID_OR_SLUG"
+curl -s -H "X-Source: skill:project-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 1.0.0" \
+  "${BASE_URL}/v2/projects/PROJECT_UID_OR_SLUG"
 ```
 
 ### Get Project Grants
 
 ```bash
-curl -s "${BASE_URL}/v2/projects/PROJECT_UID_OR_SLUG/grants"
+curl -s -H "X-Source: skill:project-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 1.0.0" \
+  "${BASE_URL}/v2/projects/PROJECT_UID_OR_SLUG/grants"
 ```
 
 Each grant has: `uid`, `details.title`, `milestones[]`
@@ -356,13 +373,15 @@ Each grant has: `uid`, `details.title`, `milestones[]`
 ### Search Communities
 
 ```bash
-curl -s "${BASE_URL}/v2/communities/?limit=5&page=1"
+curl -s -H "X-Source: skill:project-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 1.0.0" \
+  "${BASE_URL}/v2/communities/?limit=5&page=1"
 ```
 
 ### Get Community Programs
 
 ```bash
-curl -s "${BASE_URL}/communities/COMMUNITY_SLUG_OR_UID/programs"
+curl -s -H "X-Source: skill:project-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 1.0.0" \
+  "${BASE_URL}/communities/COMMUNITY_SLUG_OR_UID/programs"
 ```
 
 Each program has: `programId`, `metadata.title`. Always include `programId` when the user mentions a specific program.
