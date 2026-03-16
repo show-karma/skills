@@ -3,9 +3,7 @@ name: project-manager
 description: Manage projects, grants, milestones, and updates on the Karma protocol. Use when user says "create a project", "new project", "add a grant", "record funding", "add milestone", "complete milestone", "post an update", "project progress", "grant update", "update project", "edit project", "set up agent", "configure API key", or any on-chain project management action.
 version: 1.0.0
 tags: [agent, project, grant, milestone, update, create, manage]
-metadata:
-  author: Karma
-  category: on-chain
+metadata: {"author": "Karma", "category": "on-chain"}
 ---
 
 # Project Manager
