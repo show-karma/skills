@@ -29,6 +29,7 @@ The `SKILL.md` file contains YAML frontmatter (name, description, version, tags)
 | [`setup-agent`](skills/setup-agent/) | Register and get your API key — quick start (no account), email login, or manual. Saves key to shell config. |
 | [`project-manager`](skills/project-manager/) | Create and manage projects, grants, milestones, and updates on-chain. Handles all attestation actions in one skill. |
 | [`find-funding-opportunities`](skills/find-funding-opportunities/) | Search the Karma Funding Map for grants, hackathons, bounties, accelerators, VC funds, and RFPs. |
+| [`funding-digest`](skills/funding-digest/) | Weekly digest of new funding opportunities — set up as a cron or run on demand. Supports user preference filters. |
 
 All on-chain skills use the Karma Agent API with a server-side wallet. No gas fees, no browser wallet needed.
 

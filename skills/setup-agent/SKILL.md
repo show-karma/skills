@@ -3,9 +3,7 @@ name: setup-agent
 description: Set up or log in to Karma. Use when user says "set up agent", "configure API key", "connect to Karma", "login to Karma", "log in", or before first use of any Karma skill.
 version: 0.2.0
 tags: [agent, setup, authentication, login]
-metadata:
-  author: Karma
-  category: authentication
+metadata: {"author": "Karma", "category": "authentication"}
 ---
 
 # Setup Karma Agent
