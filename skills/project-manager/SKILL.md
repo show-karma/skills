@@ -1,8 +1,8 @@
 ---
 name: project-manager
-description: Manage projects, grants, milestones, and updates on the Karma protocol. Use when user says "create a project", "new project", "add a grant", "record funding", "add milestone", "complete milestone", "post an update", "project progress", "grant update", "update project", "edit project", "set up agent", "configure API key", or any on-chain project management action.
-version: 1.0.0
-tags: [agent, project, grant, milestone, update, create, manage]
+description: Manage projects, grants, milestones, and updates on the Karma protocol. Use when user says "create a project", "new project", "add a grant", "record funding", "add milestone", "complete milestone", "post an update", "project progress", "grant update", "update project", "edit project", "edit grant", "complete grant", "add roadmap milestone", "report impact", "endorse project", "add team member", "set up agent", "configure API key", or any on-chain project management action.
+version: 2.0.0
+tags: [agent, project, grant, milestone, update, create, manage, impact, endorsement, members]
 metadata:
   author: Karma
   category: on-chain
@@ -25,7 +25,7 @@ INVOCATION_ID=$(uuidgen)
 ```bash
 -H "X-Source: skill:project-manager"
 -H "X-Invocation-Id: $INVOCATION_ID"
--H "X-Skill-Version: 1.0.0"
+-H "X-Skill-Version: 2.0.0"
 ```
 
 ---
@@ -44,7 +44,7 @@ Otherwise use the `AskUserQuestion` tool with these options:
 ```bash
 curl -s -X POST "${BASE_URL}/v2/agent/register" \
   -H "Content-Type: application/json" \
-  -H "X-Source: skill:project-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 1.0.0" \
+  -H "X-Source: skill:project-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 2.0.0" \
   -d '{}'
 ```
 
@@ -100,7 +100,7 @@ export KARMA_API_KEY="karma_..."
 ```bash
 curl -s "${BASE_URL}/v2/agent/info" \
   -H "x-api-key: ${API_KEY}" \
-  -H "X-Source: skill:project-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 1.0.0"
+  -H "X-Source: skill:project-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 2.0.0"
 ```
 
 If response includes `walletAddress` and `supportedActions` → ready. Do NOT show wallet/chain details to the user. Tell them:
@@ -117,7 +117,7 @@ All actions use:
 curl -s -X POST "${BASE_URL}/v2/agent/execute" \
   -H "Content-Type: application/json" \
   -H "x-api-key: ${API_KEY}" \
-  -H "X-Source: skill:project-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 1.0.0" \
+  -H "X-Source: skill:project-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 2.0.0" \
   -d '{ "action": "<ACTION>", "params": { ... } }'
 ```
 
@@ -164,9 +164,15 @@ Child attestations **must** use the same chain as their parent:
 
 - **Grant** → uses `project.chainId`
 - **Grant Update** → uses `grant.chainId`
+- **Update Grant Details** → uses `grant.chainId`
+- **Complete Grant** → uses `grant.chainId`
 - **Milestone** → uses `grant.chainId`
 - **Complete Milestone** → uses `milestone.chainId`
 - **Project Update** → uses `project.chainId`
+- **Project Milestone** → uses `project.chainId`
+- **Project Impact** → uses `project.chainId`
+- **Endorse Project** → uses `project.chainId`
+- **Add Members** → uses `project.chainId`
 
 Look up the parent's chain from the API — never ask the user for a chain on child attestations.
 
@@ -343,12 +349,116 @@ After success, use the same post-creation message as `createProject`.
 
 ---
 
+### updateGrantDetails
+
+Update an existing grant's details. Attests new details — the indexer uses the latest one.
+
+| Param | Required | Description |
+|-------|----------|-------------|
+| `chainId` | Yes | Must match grant's chain |
+| `grantUID` | Yes | Grant attestation UID |
+| `title` | Yes | Grant title (1-200 chars) |
+| `description` | No | Grant description (1-5000 chars) |
+| `amount` | No | Funding amount (e.g. "50000 USDC") |
+| `proposalURL` | No | Link to grant proposal |
+| `programId` | No | Program ID |
+
+**Important**: Fetch current grant details first, merge user's changes with existing values, then send all fields.
+
+---
+
+### completeGrant
+
+Mark a grant as fully completed with a final summary.
+
+| Param | Required | Description |
+|-------|----------|-------------|
+| `chainId` | Yes | Must match grant's chain |
+| `grantUID` | Yes | Grant attestation UID |
+| `title` | Yes | Completion title (1-200 chars) |
+| `text` | Yes | Completion summary (1-10000 chars) |
+| `proofOfWork` | No | URL to proof (demo, report, repo) |
+| `pitchDeck` | No | URL to pitch deck |
+| `demoVideo` | No | URL to demo video |
+| `trackExplanations` | No | Array of `{ trackId, trackName, explanation }` — how the grant fulfilled each track |
+
+After completion:
+
+> Grant **{title}** has been marked as completed!
+>
+> - **Grant**: {title}
+> - **Chain**: {chainName} ({chainId})
+> - **Transaction**: {transactionHash}
+
+---
+
+### createProjectMilestone
+
+Create a project-level roadmap milestone (not tied to a specific grant).
+
+| Param | Required | Description |
+|-------|----------|-------------|
+| `chainId` | Yes | Must match project's chain |
+| `projectUID` | Yes | Project attestation UID |
+| `title` | Yes | Milestone title (1-200 chars) |
+| `text` | Yes | Milestone description (1-5000 chars) |
+
+---
+
+### createProjectImpact
+
+Report impact achieved by a project.
+
+| Param | Required | Description |
+|-------|----------|-------------|
+| `chainId` | Yes | Must match project's chain |
+| `projectUID` | Yes | Project attestation UID |
+| `work` | Yes | Description of work done (1-5000 chars) |
+| `impact` | Yes | Description of impact achieved (1-5000 chars) |
+| `proof` | Yes | Proof of impact — URL or description (1-5000 chars) |
+| `startedAt` | No | When work started (Unix timestamp in seconds) |
+| `completedAt` | Yes | When work was completed (Unix timestamp in seconds) |
+
+---
+
+### endorseProject
+
+Endorse a project with an optional comment.
+
+| Param | Required | Description |
+|-------|----------|-------------|
+| `chainId` | Yes | Must match project's chain |
+| `projectUID` | Yes | Project attestation UID |
+| `comment` | No | Endorsement comment (1-5000 chars) |
+
+---
+
+### addProjectMembers
+
+Add team members to a project.
+
+| Param | Required | Description |
+|-------|----------|-------------|
+| `chainId` | Yes | Must match project's chain |
+| `projectUID` | Yes | Project attestation UID |
+| `members` | Yes | Array of members (1-20) |
+
+Each member object:
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| `address` | Yes | Ethereum address of the member |
+| `name` | No | Member's display name |
+| `profilePictureURL` | No | Member's profile picture URL |
+
+---
+
 ## Looking Up Data
 
 ### Find a Project
 
 ```bash
-curl -s -H "X-Source: skill:project-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 1.0.0" \
+curl -s -H "X-Source: skill:project-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 2.0.0" \
   "${BASE_URL}/v2/projects?q=SEARCH_TERM&limit=5&page=1"
 ```
 
@@ -357,14 +467,14 @@ Each result has: `uid`, `chainID`, `details.title`, `details.slug`, `details.des
 ### Get Project by UID or Slug
 
 ```bash
-curl -s -H "X-Source: skill:project-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 1.0.0" \
+curl -s -H "X-Source: skill:project-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 2.0.0" \
   "${BASE_URL}/v2/projects/PROJECT_UID_OR_SLUG"
 ```
 
 ### Get Project Grants
 
 ```bash
-curl -s -H "X-Source: skill:project-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 1.0.0" \
+curl -s -H "X-Source: skill:project-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 2.0.0" \
   "${BASE_URL}/v2/projects/PROJECT_UID_OR_SLUG/grants"
 ```
 
@@ -373,14 +483,14 @@ Each grant has: `uid`, `details.title`, `milestones[]`
 ### Search Communities
 
 ```bash
-curl -s -H "X-Source: skill:project-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 1.0.0" \
+curl -s -H "X-Source: skill:project-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 2.0.0" \
   "${BASE_URL}/v2/communities/?limit=5&page=1"
 ```
 
 ### Get Community Programs
 
 ```bash
-curl -s -H "X-Source: skill:project-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 1.0.0" \
+curl -s -H "X-Source: skill:project-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 2.0.0" \
   "${BASE_URL}/communities/COMMUNITY_SLUG_OR_UID/programs"
 ```
 
@@ -398,8 +508,14 @@ Each program has: `programId`, `metadata.title`. Always include `programId` when
 | "post an update", "project progress" | `createProjectUpdate` — look up projectUID, inherit chain |
 | "add a grant", "record funding" | `createGrant` — look up projectUID + communityUID, inherit chain |
 | "grant update", "grant progress" | `createGrantUpdate` — look up grantUID, inherit chain |
+| "edit grant", "update grant details", "change grant amount" | `updateGrantDetails` — fetch current grant, merge changes |
+| "complete grant", "finish grant", "close grant" | `completeGrant` — look up grantUID, inherit chain |
 | "add milestone", "set deliverable" | `createMilestone` — look up grantUID, inherit chain |
 | "complete milestone", "mark done" | `completeMilestone` — look up milestoneUID, inherit chain |
+| "add roadmap milestone", "project milestone" | `createProjectMilestone` — look up projectUID, inherit chain |
+| "report impact", "log impact", "share impact" | `createProjectImpact` — look up projectUID, inherit chain |
+| "endorse project", "support project" | `endorseProject` — look up projectUID, inherit chain |
+| "add team member", "add member", "invite to project" | `addProjectMembers` — look up projectUID, inherit chain |
 | "create project with grant" | `createProjectWithGrant` |
 
 ---
