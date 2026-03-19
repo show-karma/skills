@@ -33,6 +33,18 @@
       ]
     },
     {
+      "name": "Funding Program Manager",
+      "description": "Manage funding programs — reviewers, applications, milestones, payouts, grant agreements, and AI evaluation",
+      "version": "1.0.0",
+      "source": "./",
+      "strict": false,
+      "tags": ["program", "admin", "reviewer", "payout", "application"],
+      "skills": [
+        "./skills/setup-agent",
+        "./skills/funding-program-manager"
+      ]
+    },
+    {
       "name": "Skill Creator",
       "description": "Create new Claude Code skills for the Karma ecosystem",
       "version": "0.1.0",
