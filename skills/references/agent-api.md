@@ -141,6 +141,30 @@ Each program has:
 
 **Important**: If the user mentions a program/track name, always look up the `programId` and include it in the grant params. Without it, the grant won't appear under that program on the website.
 
+## Supported Actions
+
+The execute endpoint supports these actions:
+
+**Project Management:**
+- `createProject` — Create a new project with details
+- `updateProjectDetails` — Update existing project info
+- `createProjectUpdate` — Post a project progress update
+- `createProjectMilestone` — Create a project-level roadmap milestone
+- `createProjectImpact` — Report project impact (work, impact, proof)
+- `endorseProject` — Endorse a project with a comment
+- `addProjectMembers` — Add team members to a project
+- `createProjectWithGrant` — Create project + grant atomically
+
+**Grant Management:**
+- `createGrant` — Add a grant to a project
+- `createGrantUpdate` — Post a grant progress update
+- `updateGrantDetails` — Update existing grant info
+- `completeGrant` — Mark a grant as fully completed
+
+**Milestone Management:**
+- `createMilestone` — Add a milestone to a grant
+- `completeMilestone` — Mark a milestone as completed
+
 ## Output Format
 
 After a successful action, always display:
