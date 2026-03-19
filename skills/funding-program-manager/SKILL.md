@@ -1,6 +1,6 @@
 ---
 name: funding-program-manager
-description: Manage funding programs on Karma — reviewers, applications, milestones, payouts, grant agreements, and AI evaluation. Use when user says "manage program", "list reviewers", "add reviewer", "remove reviewer", "review applications", "approve application", "reject application", "application status", "list applications", "milestone completions", "pending milestones", "create payout", "disbursement", "payout history", "grant agreement", "sign agreement", "evaluate application", "AI score", "application comment", "configure intake form", or any funding program administration action.
+description: Manage funding programs on Karma — apply to programs, manage reviewers, applications, milestones, payouts, grant agreements, and AI evaluation. Use when user says "apply to program", "submit application", "apply for grant", "manage program", "list reviewers", "add reviewer", "remove reviewer", "review applications", "approve application", "reject application", "application status", "list applications", "milestone completions", "pending milestones", "create payout", "disbursement", "payout history", "grant agreement", "sign agreement", "evaluate application", "AI score", "application comment", "configure intake form", or any funding program administration action.
 version: 1.0.0
 tags: [program, reviewer, application, milestone, payout, agreement, evaluation, admin]
 metadata:
@@ -184,7 +184,109 @@ curl -s -X PUT "${BASE_URL}/funding-applications/${REFERENCE_NUMBER}/status" \
 
 ---
 
-## 3. Program Reviewers
+## 3. Apply to a Funding Program
+
+Applying requires knowing the program's form fields first. Always fetch the form schema before asking the user for input.
+
+### Step 1: Get the Intake Form
+
+```bash
+curl -s "${BASE_URL}/funding-program-configs/${PROGRAM_ID}" \
+  -H "X-Source: skill:funding-program-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 1.0.0"
+```
+
+Look at `applicationConfig.formSchema.fields` in the response. Each field has:
+
+| Property | Description |
+|----------|-------------|
+| `id` | Internal field ID |
+| `label` | Display label — **use this as the key in applicationData** |
+| `type` | `text`, `textarea`, `number`, `email`, `url`, `select` |
+| `required` | Whether the field must be filled |
+| `placeholder` | Hint text |
+| `description` | Help text |
+| `options` | For `select` fields: `[{ value, label }]` |
+
+Skip fields with `deleted: true`.
+
+### Step 2: Gather Answers from the User
+
+Present the form fields to the user and collect their answers. Example prompt:
+
+> To apply to **{programName}**, please provide the following:
+>
+> - **Project Name** (required): Your project's name
+> - **Description** (required): What does your project do?
+> - **Funding Amount**: How much are you requesting?
+> - **Team Size**: Number of team members
+>
+> You'll also need your **email address** for application tracking.
+
+### Step 3: Validate Access Code (If Gated)
+
+Some programs require an access code. Check if `applicationConfig.formSchema.settings.accessCode` exists in the program config. If so, ask the user for it and validate:
+
+```bash
+curl -s -X POST "${BASE_URL}/funding-applications/${PROGRAM_ID}/validate-access-code" \
+  -H "Content-Type: application/json" \
+  -H "X-Source: skill:funding-program-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 1.0.0" \
+  -d '{ "accessCode": "user-provided-code" }'
+```
+
+No auth required for validation.
+
+### Step 4: Submit the Application
+
+**IMPORTANT**: The `applicationData` keys must be the **field labels** (not field IDs). This matches how the frontend stores form data.
+
+```bash
+curl -s -X POST "${BASE_URL}/funding-applications/${PROGRAM_ID}" \
+  -H "Content-Type: application/json" \
+  -H "x-api-key: ${API_KEY}" \
+  -H "X-Source: skill:funding-program-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 1.0.0" \
+  -d '{
+    "applicantEmail": "applicant@example.com",
+    "applicationData": {
+      "Project Name": "My DeFi Protocol",
+      "Description": "A decentralized lending platform...",
+      "Funding Amount": "50000",
+      "Team Size": "5"
+    },
+    "accessCode": "optional-code"
+  }'
+```
+
+| Param | Required | Description |
+|-------|----------|-------------|
+| `applicantEmail` | Yes | Applicant's email (used for notifications) |
+| `applicationData` | Yes | Form responses keyed by **field label** |
+| `accessCode` | If gated | Access code for gated programs |
+
+**Response** (201 Created):
+
+```json
+{
+  "referenceNumber": "APP-ABCD1234-XYZ789",
+  "status": "pending",
+  "programId": "...",
+  "applicantEmail": "applicant@example.com",
+  "createdAt": "2024-01-01T00:00:00Z"
+}
+```
+
+After submission:
+
+> Your application has been submitted!
+>
+> - **Reference**: {referenceNumber}
+> - **Program**: {programName}
+> - **Status**: Pending
+>
+> You'll receive updates at {applicantEmail}.
+
+---
+
+## 4. Program Reviewers
 
 ### List Program Reviewers
 
@@ -220,7 +322,7 @@ curl -s -X DELETE "${BASE_URL}/funding-program-configs/${PROGRAM_ID}/reviewers/b
 
 ---
 
-## 4. Milestone Reviewers
+## 5. Milestone Reviewers
 
 ### List Milestone Reviewers
 
@@ -255,7 +357,7 @@ curl -s -X DELETE "${BASE_URL}/programs/${PROGRAM_ID}/milestone-reviewers/by-ema
 
 ---
 
-## 5. Application Reviewer Assignment
+## 6. Application Reviewer Assignment
 
 ### Assign Reviewers to Application
 
@@ -274,7 +376,7 @@ Both arrays are optional — provide at least one. Addresses must be valid Ether
 
 ---
 
-## 6. Milestone Completions
+## 7. Milestone Completions
 
 ### List Milestone Completions for an Application
 
@@ -288,7 +390,7 @@ Returns completions with `isVerified`, `verifiedBy`, `verifiedAt`, and `verifica
 
 ---
 
-## 7. Payout Disbursements
+## 8. Payout Disbursements
 
 ### Create Disbursement Batch
 
@@ -351,7 +453,7 @@ curl -s "${BASE_URL}/v2/payouts/safe/${SAFE_ADDRESS}/awaiting?page=1&limit=20" \
 
 ---
 
-## 8. Grant Agreements
+## 9. Grant Agreements
 
 ### Get Grant Agreement
 
@@ -376,7 +478,7 @@ curl -s -X POST "${BASE_URL}/grant-agreements/${GRANT_UID}" \
 
 ---
 
-## 9. AI Evaluation
+## 10. AI Evaluation
 
 ### Trigger Public AI Evaluation
 
@@ -400,7 +502,7 @@ Internal evaluations are only visible to program admins.
 
 ---
 
-## 10. Application Comments
+## 11. Application Comments
 
 ### List Comments (Admin)
 
@@ -441,6 +543,8 @@ curl -s -X POST "${BASE_URL}/v2/applications/${REFERENCE_NUMBER}/comments" \
 | "add milestone reviewer" | Add milestone reviewer |
 | "remove milestone reviewer" | Remove milestone reviewer |
 | "assign reviewers to application" | Assign application reviewers |
+| "apply to program", "submit application", "apply for grant" | Get form → collect answers → submit application |
+| "what fields does this program need" | Get program application form schema |
 | "list applications", "show applications" | List applications for program |
 | "application details", "show application" | Get application by reference |
 | "approve application" | Update status to `approved` (requires amount + currency) |
