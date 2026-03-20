@@ -49,7 +49,7 @@ curl -s -X POST "${BASE_URL}/v2/agent/register" \
   -d '{}'
 ```
 
-Returns `{ "key": "karma_..." }` — shown only once.
+Returns `{ "apiKey": "karma_..." }` — shown only once.
 
 **Important**: Always send `-d '{}'` — an empty body causes a 400 error.
 
