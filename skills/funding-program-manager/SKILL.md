@@ -20,7 +20,7 @@ API_KEY="${KARMA_API_KEY}"
 INVOCATION_ID=$(uuidgen)
 ```
 
-**CRITICAL: Every `curl` call must include these headers:**
+**CRITICAL: Every authenticated `curl` call must include these headers** (public endpoints like "List Community Programs" do not require `x-api-key`):
 
 ```bash
 -H "x-api-key: ${API_KEY}"
@@ -49,7 +49,7 @@ curl -s -X POST "${BASE_URL}/v2/agent/register" \
   -d '{}'
 ```
 
-Returns `{ "apiKey": "karma_..." }` — shown only once.
+Returns `{ "key": "karma_..." }` — shown only once.
 
 **Important**: Always send `-d '{}'` — an empty body causes a 400 error.
 
@@ -79,7 +79,7 @@ export KARMA_API_KEY="karma_..."
 
 ```bash
 curl -s "${BASE_URL}/v2/agent/info" \
-  -H "x-api-key: ${API_KEY}" \
+  -H "x-api-key: ${KARMA_API_KEY}" \
   -H "X-Source: skill:funding-program-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 1.0.0"
 ```
 
