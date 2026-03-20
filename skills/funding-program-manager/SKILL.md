@@ -92,7 +92,7 @@ If response includes `walletAddress` → ready.
 ### Get Program Details
 
 ```bash
-curl -s "${BASE_URL}/funding-program-configs/${PROGRAM_ID}" \
+curl -s "${BASE_URL}/v2/funding-program-configs/${PROGRAM_ID}" \
   -H "x-api-key: ${API_KEY}" \
   -H "X-Source: skill:funding-program-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 1.0.0"
 ```
@@ -100,7 +100,7 @@ curl -s "${BASE_URL}/funding-program-configs/${PROGRAM_ID}" \
 ### List Community Programs
 
 ```bash
-curl -s "${BASE_URL}/funding-program-configs/community/${COMMUNITY_UID}" \
+curl -s "${BASE_URL}/v2/funding-program-configs/community/${COMMUNITY_UID}" \
   -H "X-Source: skill:funding-program-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 1.0.0"
 ```
 
@@ -109,7 +109,7 @@ No auth required — public endpoint.
 ### Update Program Configuration
 
 ```bash
-curl -s -X PUT "${BASE_URL}/funding-program-configs/${PROGRAM_ID}" \
+curl -s -X PUT "${BASE_URL}/v2/funding-program-configs/${PROGRAM_ID}" \
   -H "Content-Type: application/json" \
   -H "x-api-key: ${API_KEY}" \
   -H "X-Source: skill:funding-program-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 1.0.0" \
@@ -123,7 +123,7 @@ curl -s -X PUT "${BASE_URL}/funding-program-configs/${PROGRAM_ID}" \
 ### Generate Program Report (Application Statistics)
 
 ```bash
-curl -s "${BASE_URL}/funding-applications/program/${PROGRAM_ID}/statistics" \
+curl -s "${BASE_URL}/v2/funding-applications/program/${PROGRAM_ID}/statistics" \
   -H "X-Source: skill:funding-program-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 1.0.0"
 ```
 
@@ -134,7 +134,7 @@ curl -s "${BASE_URL}/funding-applications/program/${PROGRAM_ID}/statistics" \
 ### List Applications for a Program
 
 ```bash
-curl -s "${BASE_URL}/funding-applications/program/${PROGRAM_ID}?page=1&limit=20&status=${STATUS}&search=${SEARCH}&sortBy=createdAt&sortOrder=desc" \
+curl -s "${BASE_URL}/v2/funding-applications/program/${PROGRAM_ID}?page=1&limit=20&status=${STATUS}&search=${SEARCH}&sortBy=createdAt&sortOrder=desc" \
   -H "x-api-key: ${API_KEY}" \
   -H "X-Source: skill:funding-program-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 1.0.0"
 ```
@@ -153,7 +153,7 @@ Query params (all optional):
 ### Get Application Details
 
 ```bash
-curl -s "${BASE_URL}/funding-applications/${REFERENCE_NUMBER}" \
+curl -s "${BASE_URL}/v2/funding-applications/${REFERENCE_NUMBER}" \
   -H "x-api-key: ${API_KEY}" \
   -H "X-Source: skill:funding-program-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 1.0.0"
 ```
@@ -163,7 +163,7 @@ Reference number format: `APP-XXXXX-XXXXX`
 ### Update Application Status
 
 ```bash
-curl -s -X PUT "${BASE_URL}/funding-applications/${REFERENCE_NUMBER}/status" \
+curl -s -X PUT "${BASE_URL}/v2/funding-applications/${REFERENCE_NUMBER}/status" \
   -H "Content-Type: application/json" \
   -H "x-api-key: ${API_KEY}" \
   -H "X-Source: skill:funding-program-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 1.0.0" \
@@ -191,7 +191,7 @@ Applying requires knowing the program's form fields first. Always fetch the form
 ### Step 1: Get the Intake Form
 
 ```bash
-curl -s "${BASE_URL}/funding-program-configs/${PROGRAM_ID}" \
+curl -s "${BASE_URL}/v2/funding-program-configs/${PROGRAM_ID}" \
   -H "X-Source: skill:funding-program-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 1.0.0"
 ```
 
@@ -227,7 +227,7 @@ Present the form fields to the user and collect their answers. Example prompt:
 Some programs require an access code. Check if `applicationConfig.formSchema.settings.accessCode` exists in the program config. If so, ask the user for it and validate:
 
 ```bash
-curl -s -X POST "${BASE_URL}/funding-applications/${PROGRAM_ID}/validate-access-code" \
+curl -s -X POST "${BASE_URL}/v2/funding-applications/${PROGRAM_ID}/validate-access-code" \
   -H "Content-Type: application/json" \
   -H "X-Source: skill:funding-program-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 1.0.0" \
   -d '{ "accessCode": "user-provided-code" }'
@@ -240,7 +240,7 @@ No auth required for validation.
 **IMPORTANT**: The `applicationData` keys must be the **field labels** (not field IDs). This matches how the frontend stores form data.
 
 ```bash
-curl -s -X POST "${BASE_URL}/funding-applications/${PROGRAM_ID}" \
+curl -s -X POST "${BASE_URL}/v2/funding-applications/${PROGRAM_ID}" \
   -H "Content-Type: application/json" \
   -H "x-api-key: ${API_KEY}" \
   -H "X-Source: skill:funding-program-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 1.0.0" \
@@ -291,7 +291,7 @@ After submission:
 ### List Program Reviewers
 
 ```bash
-curl -s "${BASE_URL}/funding-program-configs/${PROGRAM_ID}/reviewers" \
+curl -s "${BASE_URL}/v2/funding-program-configs/${PROGRAM_ID}/reviewers" \
   -H "x-api-key: ${API_KEY}" \
   -H "X-Source: skill:funding-program-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 1.0.0"
 ```
@@ -299,7 +299,7 @@ curl -s "${BASE_URL}/funding-program-configs/${PROGRAM_ID}/reviewers" \
 ### Add Program Reviewer
 
 ```bash
-curl -s -X POST "${BASE_URL}/funding-program-configs/${PROGRAM_ID}/reviewers" \
+curl -s -X POST "${BASE_URL}/v2/funding-program-configs/${PROGRAM_ID}/reviewers" \
   -H "Content-Type: application/json" \
   -H "x-api-key: ${API_KEY}" \
   -H "X-Source: skill:funding-program-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 1.0.0" \
@@ -313,7 +313,7 @@ curl -s -X POST "${BASE_URL}/funding-program-configs/${PROGRAM_ID}/reviewers" \
 ### Remove Program Reviewer
 
 ```bash
-curl -s -X DELETE "${BASE_URL}/funding-program-configs/${PROGRAM_ID}/reviewers/by-email" \
+curl -s -X DELETE "${BASE_URL}/v2/funding-program-configs/${PROGRAM_ID}/reviewers/by-email" \
   -H "Content-Type: application/json" \
   -H "x-api-key: ${API_KEY}" \
   -H "X-Source: skill:funding-program-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 1.0.0" \
@@ -327,14 +327,14 @@ curl -s -X DELETE "${BASE_URL}/funding-program-configs/${PROGRAM_ID}/reviewers/b
 ### List Milestone Reviewers
 
 ```bash
-curl -s "${BASE_URL}/programs/${PROGRAM_ID}/milestone-reviewers" \
+curl -s "${BASE_URL}/v2/programs/${PROGRAM_ID}/milestone-reviewers" \
   -H "X-Source: skill:funding-program-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 1.0.0"
 ```
 
 ### Add Milestone Reviewer
 
 ```bash
-curl -s -X POST "${BASE_URL}/programs/${PROGRAM_ID}/milestone-reviewers" \
+curl -s -X POST "${BASE_URL}/v2/programs/${PROGRAM_ID}/milestone-reviewers" \
   -H "Content-Type: application/json" \
   -H "x-api-key: ${API_KEY}" \
   -H "X-Source: skill:funding-program-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 1.0.0" \
@@ -348,7 +348,7 @@ curl -s -X POST "${BASE_URL}/programs/${PROGRAM_ID}/milestone-reviewers" \
 ### Remove Milestone Reviewer
 
 ```bash
-curl -s -X DELETE "${BASE_URL}/programs/${PROGRAM_ID}/milestone-reviewers/by-email" \
+curl -s -X DELETE "${BASE_URL}/v2/programs/${PROGRAM_ID}/milestone-reviewers/by-email" \
   -H "Content-Type: application/json" \
   -H "x-api-key: ${API_KEY}" \
   -H "X-Source: skill:funding-program-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 1.0.0" \
@@ -362,7 +362,7 @@ curl -s -X DELETE "${BASE_URL}/programs/${PROGRAM_ID}/milestone-reviewers/by-ema
 ### Assign Reviewers to Application
 
 ```bash
-curl -s -X PUT "${BASE_URL}/funding-applications/${REFERENCE_NUMBER}/reviewers" \
+curl -s -X PUT "${BASE_URL}/v2/funding-applications/${REFERENCE_NUMBER}/reviewers" \
   -H "Content-Type: application/json" \
   -H "x-api-key: ${API_KEY}" \
   -H "X-Source: skill:funding-program-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 1.0.0" \
@@ -381,7 +381,7 @@ Both arrays are optional — provide at least one. Addresses must be valid Ether
 ### List Milestone Completions for an Application
 
 ```bash
-curl -s "${BASE_URL}/funding-applications/${REFERENCE_NUMBER}/milestone-completions" \
+curl -s "${BASE_URL}/v2/funding-applications/${REFERENCE_NUMBER}/milestone-completions" \
   -H "x-api-key: ${API_KEY}" \
   -H "X-Source: skill:funding-program-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 1.0.0"
 ```
@@ -458,7 +458,7 @@ curl -s "${BASE_URL}/v2/payouts/safe/${SAFE_ADDRESS}/awaiting?page=1&limit=20" \
 ### Get Grant Agreement
 
 ```bash
-curl -s "${BASE_URL}/grant-agreements/${GRANT_UID}" \
+curl -s "${BASE_URL}/v2/grant-agreements/${GRANT_UID}" \
   -H "x-api-key: ${API_KEY}" \
   -H "X-Source: skill:funding-program-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 1.0.0"
 ```
@@ -466,7 +466,7 @@ curl -s "${BASE_URL}/grant-agreements/${GRANT_UID}" \
 ### Toggle Grant Agreement (Sign/Unsign)
 
 ```bash
-curl -s -X POST "${BASE_URL}/grant-agreements/${GRANT_UID}" \
+curl -s -X POST "${BASE_URL}/v2/grant-agreements/${GRANT_UID}" \
   -H "Content-Type: application/json" \
   -H "x-api-key: ${API_KEY}" \
   -H "X-Source: skill:funding-program-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 1.0.0" \
@@ -483,7 +483,7 @@ curl -s -X POST "${BASE_URL}/grant-agreements/${GRANT_UID}" \
 ### Trigger Public AI Evaluation
 
 ```bash
-curl -s -X POST "${BASE_URL}/funding-applications/${REFERENCE_NUMBER}/evaluate" \
+curl -s -X POST "${BASE_URL}/v2/funding-applications/${REFERENCE_NUMBER}/evaluate" \
   -H "x-api-key: ${API_KEY}" \
   -H "X-Source: skill:funding-program-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 1.0.0"
 ```
@@ -493,7 +493,7 @@ No request body — evaluation uses the application's existing data.
 ### Trigger Internal AI Evaluation (Admin-Only)
 
 ```bash
-curl -s -X POST "${BASE_URL}/funding-applications/${REFERENCE_NUMBER}/evaluate-internal" \
+curl -s -X POST "${BASE_URL}/v2/funding-applications/${REFERENCE_NUMBER}/evaluate-internal" \
   -H "x-api-key: ${API_KEY}" \
   -H "X-Source: skill:funding-program-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 1.0.0"
 ```
