@@ -1,6 +1,6 @@
 # Karma Skills
 
-Agent skills for the Karma ecosystem — find funding opportunities, create and manage projects, post milestones and updates, administer grants.
+Agent skills for the Karma ecosystem — find funding opportunities, create and manage projects, administer funding programs, and post milestones and updates.
 
 ## Quick Start
 
@@ -16,6 +16,12 @@ Then ask your agent:
 
 > Post an update on my project — we shipped the MVP
 
+> List reviewers for Optimism Audit Grants Season 8
+
+> Show pending applications for my grant program
+
+> Add a reviewer to my program
+
 ## What Are Skills?
 
 Skills are reusable instruction sets that encode domain expertise into repeatable workflows. Each skill teaches an AI agent how to perform a specific task within the Karma ecosystem. Skills work with any compatible agent client, including Claude Code, Cursor, Windsurf, and others.
@@ -28,6 +34,7 @@ The `SKILL.md` file contains YAML frontmatter (name, description, version, tags)
 |-------|-------------|
 | [`setup-agent`](skills/setup-agent/) | Register and get your API key — quick start (no account), email login, or manual. Saves key to shell config. |
 | [`project-manager`](skills/project-manager/) | Create and manage projects, grants, milestones, and updates on-chain. Handles all attestation actions in one skill. |
+| [`funding-program-manager`](skills/funding-program-manager/) | Administer a funding program — manage reviewers, applications, milestones, payouts, grant agreements, and AI evaluations. |
 | [`find-funding-opportunities`](skills/find-funding-opportunities/) | Search the Karma Funding Map for grants, hackathons, bounties, accelerators, VC funds, and RFPs. |
 
 All on-chain skills use the Karma Agent API with a server-side wallet. No gas fees, no browser wallet needed.
