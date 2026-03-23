@@ -66,28 +66,30 @@ Returns `{ "apiKey": "karma_..." }` — shown only once.
 
 ### Save API Key
 
-After obtaining the key (from quick start, email login, or user pasting it), **ask permission** to save it permanently:
+After obtaining the key (from quick start, email login, or user pasting it), save it automatically based on the environment:
 
-> Would you like me to save your API key to your shell config so you don't have to paste it every time?
-
-If yes, detect the user's shell and append the export:
+**If `CLAUDE_PLUGIN_DATA` is set** (plugin user — CLI or Cowork):
 
 ```bash
-# Detect shell config file
-if [ -f "$HOME/.zshrc" ]; then
-  SHELL_RC="$HOME/.zshrc"
-elif [ -f "$HOME/.bashrc" ]; then
-  SHELL_RC="$HOME/.bashrc"
-fi
-
-# Append only if not already present
-grep -q 'KARMA_API_KEY' "$SHELL_RC" || echo '\n# Karma API Key\nexport KARMA_API_KEY="karma_..."' >> "$SHELL_RC"
-
-# Also export for current session
+mkdir -p "${CLAUDE_PLUGIN_DATA}"
+echo '{"apiKey": "karma_..."}' > "${CLAUDE_PLUGIN_DATA}/credentials.json"
 export KARMA_API_KEY="karma_..."
 ```
 
-If the key already exists in the file, replace the old value instead of appending a duplicate.
+> Your API key has been saved and will be loaded automatically in future sessions.
+
+**If not set** (standalone CLI user), ask permission to save to shell config:
+
+> Would you like me to save your API key to your shell config so you don't have to paste it every time?
+
+If yes:
+
+```bash
+if [ -f "$HOME/.zshrc" ]; then SHELL_RC="$HOME/.zshrc"
+elif [ -f "$HOME/.bashrc" ]; then SHELL_RC="$HOME/.bashrc"; fi
+grep -q 'KARMA_API_KEY' "$SHELL_RC" 2>/dev/null && sed -i.bak 's/export KARMA_API_KEY=.*/export KARMA_API_KEY="karma_..."/' "$SHELL_RC" || echo '\n# Karma API Key\nexport KARMA_API_KEY="karma_..."' >> "$SHELL_RC"
+export KARMA_API_KEY="karma_..."
+```
 
 If the user declines, just set it for the current session:
 

@@ -62,16 +62,22 @@ Returns `{ "apiKey": "karma_..." }` — shown only once.
 
 ### Save API Key
 
-After obtaining the key, **ask permission** to save it permanently:
+After obtaining the key, save it automatically based on the environment:
 
-> Would you like me to save your API key to your shell config so you don't have to paste it every time?
+**If `CLAUDE_PLUGIN_DATA` is set** (plugin user — CLI or Cowork):
 
-If yes, detect the user's shell and append:
+```bash
+mkdir -p "${CLAUDE_PLUGIN_DATA}"
+echo '{"apiKey": "karma_..."}' > "${CLAUDE_PLUGIN_DATA}/credentials.json"
+export KARMA_API_KEY="karma_..."
+```
+
+**If not set** (standalone CLI user): Ask to save to shell config:
 
 ```bash
 if [ -f "$HOME/.zshrc" ]; then SHELL_RC="$HOME/.zshrc"
 elif [ -f "$HOME/.bashrc" ]; then SHELL_RC="$HOME/.bashrc"; fi
-grep -q 'KARMA_API_KEY' "$SHELL_RC" || echo '\n# Karma API Key\nexport KARMA_API_KEY="karma_..."' >> "$SHELL_RC"
+grep -q 'KARMA_API_KEY' "$SHELL_RC" 2>/dev/null && sed -i.bak 's/export KARMA_API_KEY=.*/export KARMA_API_KEY="karma_..."/' "$SHELL_RC" || echo '\n# Karma API Key\nexport KARMA_API_KEY="karma_..."' >> "$SHELL_RC"
 export KARMA_API_KEY="karma_..."
 ```
 

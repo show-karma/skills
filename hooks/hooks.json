@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/load-credentials.sh",
+            "timeout": 5000
+          }
+        ]
+      }
+    ]
+  }
+}
