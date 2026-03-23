@@ -22,10 +22,3 @@ API_KEY=$(python3 -c "import json; print(json.load(open('$CRED_FILE'))['apiKey']
 if [ -n "$API_KEY" ]; then
   echo "export KARMA_API_KEY=\"${API_KEY}\"" >> "$CLAUDE_ENV_FILE"
 fi
-
-# Also load custom API URL if saved
-API_URL=$(python3 -c "import json; d=json.load(open('$CRED_FILE')); print(d.get('apiUrl',''))" 2>/dev/null)
-
-if [ -n "$API_URL" ]; then
-  echo "export KARMA_API_URL=\"${API_URL}\"" >> "$CLAUDE_ENV_FILE"
-fi
