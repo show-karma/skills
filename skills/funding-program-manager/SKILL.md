@@ -222,7 +222,51 @@ Present the form fields to the user and collect their answers. Example prompt:
 >
 > You'll also need your **email address** for application tracking.
 
-### Step 3: Validate Access Code (If Gated)
+### Step 3: Get AI Feedback (Optional)
+
+Check if the program has real-time AI evaluation enabled by looking at `applicationConfig.formSchema.aiConfig.enableRealTimeEvaluation` in the program config from Step 1.
+
+If **enabled**, call the evaluate-realtime endpoint with the user's answers:
+
+```bash
+curl -s -X POST "${BASE_URL}/v2/funding-applications/${PROGRAM_ID}/evaluate-realtime" \
+  -H "Content-Type: application/json" \
+  -H "x-api-key: ${API_KEY}" \
+  -H "X-Source: skill:funding-program-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 1.0.0" \
+  -d '{
+    "applicationData": {
+      "Project Name": "My DeFi Protocol",
+      "Description": "A decentralized lending platform..."
+    }
+  }'
+```
+
+**Response**:
+
+```json
+{
+  "success": true,
+  "data": { "score": 8, "decision": "approve", "strengths": [...], "concerns": [...] },
+  "promptId": "prompt-123"
+}
+```
+
+Show the AI feedback to the user:
+
+> **AI Feedback** (score: {score}/10 — {decision})
+>
+> **Strengths**: {strengths}
+> **Concerns**: {concerns}
+>
+> *This AI review is for guidance only and may not be fully accurate.*
+>
+> Would you like to revise your answers or proceed to submit?
+
+If the user wants to revise, go back to Step 2. If they want to proceed, save the evaluation for Step 5.
+
+**If not enabled or evaluation fails**: Skip this step — the user can still submit without AI feedback.
+
+### Step 4: Validate Access Code (If Gated)
 
 Some programs require an access code. Check if `applicationConfig.formSchema.settings.accessCode` exists in the program config. If so, ask the user for it and validate:
 
@@ -235,9 +279,11 @@ curl -s -X POST "${BASE_URL}/v2/funding-applications/${PROGRAM_ID}/validate-acce
 
 No auth required for validation.
 
-### Step 4: Submit the Application
+### Step 5: Submit the Application
 
 **IMPORTANT**: The `applicationData` keys must be the **field labels** (not field IDs). This matches how the frontend stores form data.
+
+If AI evaluation was performed in Step 3, include the `aiEvaluation` field with the stringified result:
 
 ```bash
 curl -s -X POST "${BASE_URL}/v2/funding-applications/${PROGRAM_ID}" \
@@ -252,6 +298,10 @@ curl -s -X POST "${BASE_URL}/v2/funding-applications/${PROGRAM_ID}" \
       "Funding Amount": "50000",
       "Team Size": "5"
     },
+    "aiEvaluation": {
+      "evaluation": "{\"score\": 8, \"decision\": \"approve\", ...}",
+      "promptId": "prompt-123"
+    },
     "accessCode": "optional-code"
   }'
 ```
@@ -260,6 +310,7 @@ curl -s -X POST "${BASE_URL}/v2/funding-applications/${PROGRAM_ID}" \
 |-------|----------|-------------|
 | `applicantEmail` | Yes | Applicant's email (used for notifications) |
 | `applicationData` | Yes | Form responses keyed by **field label** |
+| `aiEvaluation` | No | `{ evaluation: "<stringified result>", promptId }` from Step 3 |
 | `accessCode` | If gated | Access code for gated programs |
 
 **Response** (201 Created):
@@ -543,8 +594,9 @@ curl -s -X POST "${BASE_URL}/v2/applications/${REFERENCE_NUMBER}/comments" \
 | "add milestone reviewer" | Add milestone reviewer |
 | "remove milestone reviewer" | Remove milestone reviewer |
 | "assign reviewers to application" | Assign application reviewers |
-| "apply to program", "submit application", "apply for grant" | Get form → collect answers → submit application |
+| "apply to program", "submit application", "apply for grant" | Get form → collect answers → AI feedback → submit |
 | "what fields does this program need" | Get program application form schema |
+| "get AI feedback", "score my application", "evaluate my draft" | Run real-time AI evaluation on draft answers |
 | "list applications", "show applications" | List applications for program |
 | "application details", "show application" | Get application by reference |
 | "approve application" | Update status to `approved` (requires amount + currency) |
