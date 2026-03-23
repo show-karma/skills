@@ -107,33 +107,53 @@ curl -s -X POST "${BASE_URL}/v2/api-keys/auth/verify" \
 
 ## 1. Save Your API Key
 
-After obtaining the key, **ask permission** to save it permanently:
+After obtaining the key, save it automatically. The save method depends on the environment:
+
+### If running as a plugin (`CLAUDE_PLUGIN_DATA` is set):
+
+Save to the plugin's persistent data directory — this works in both CLI and Cowork and persists across sessions automatically:
+
+```bash
+mkdir -p "${CLAUDE_PLUGIN_DATA}"
+cat > "${CLAUDE_PLUGIN_DATA}/credentials.json" << EOF
+{"apiKey": "karma_..."}
+EOF
+export KARMA_API_KEY="karma_..."
+```
+
+Tell the user:
+
+> Your API key has been saved and will be loaded automatically in future sessions.
+
+### If running standalone (no `CLAUDE_PLUGIN_DATA`):
+
+Ask permission to save to shell config:
 
 > Would you like me to save your API key to your shell config so you don't have to paste it every time?
 
-If yes, detect the user's shell and append the export:
+If yes:
 
 ```bash
-# Detect shell config file
 if [ -f "$HOME/.zshrc" ]; then
   SHELL_RC="$HOME/.zshrc"
 elif [ -f "$HOME/.bashrc" ]; then
   SHELL_RC="$HOME/.bashrc"
 fi
 
-# Append only if not already present
-grep -q 'KARMA_API_KEY' "$SHELL_RC" || echo '\n# Karma API Key\nexport KARMA_API_KEY="karma_..."' >> "$SHELL_RC"
+# Replace existing or append
+if grep -q 'KARMA_API_KEY' "$SHELL_RC" 2>/dev/null; then
+  sed -i.bak 's/export KARMA_API_KEY=.*/export KARMA_API_KEY="karma_..."/' "$SHELL_RC"
+else
+  echo '\n# Karma API Key\nexport KARMA_API_KEY="karma_..."' >> "$SHELL_RC"
+fi
 
-# Also export for current session
 export KARMA_API_KEY="karma_..."
 ```
-
-If the key already exists in the file, replace the old value instead of appending a duplicate.
 
 If the user declines, just set it for the current session:
 
 ```bash
-export KARMA_API_KEY="karma_your_key_here"
+export KARMA_API_KEY="karma_..."
 ```
 
 ## 2. Set the API URL (Optional)
