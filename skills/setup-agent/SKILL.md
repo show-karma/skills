@@ -46,7 +46,7 @@ RESPONSE=$(curl -s -X POST "${BASE_URL}/v2/agent/register" \
   -H "Content-Type: application/json" \
   -H "X-Source: skill:setup-agent" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 0.3.0" \
   -d '{}')
-API_KEY=$(echo "$RESPONSE" | python3 -c "import sys,json; print(json.load(sys.stdin).get('key',''))")
+API_KEY=$(echo "$RESPONSE" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('key','') or d.get('apiKey',''))")
 ```
 
 Extract the `key` value from the response into `API_KEY`. Do NOT display the key in conversation. Proceed immediately to [Save Your API Key](#1-save-your-api-key).
@@ -91,7 +91,7 @@ RESPONSE=$(curl -s -X POST "${BASE_URL}/v2/api-keys/auth/verify" \
     "code": "123456",
     "name": "claude-agent"
   }')
-API_KEY=$(echo "$RESPONSE" | python3 -c "import sys,json; print(json.load(sys.stdin).get('key',''))")
+API_KEY=$(echo "$RESPONSE" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('key','') or d.get('apiKey',''))")
 ```
 
 Extract the `key` value into `API_KEY`. Do NOT display it in conversation. Proceed immediately to save it.
