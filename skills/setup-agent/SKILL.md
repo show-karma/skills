@@ -32,7 +32,7 @@ Check if `KARMA_API_KEY` is already set:
 
   - **Quick start** → go to [Quick Start — No Account Needed](#quick-start--no-account-needed)
   - **Email login** → go to [Create API Key via Email](#create-api-key-via-email)
-  - **I already have a key** → ask for the key, skip to [Save Your API Key](#1-save-your-api-key)
+  - **I already have a key** → tell the user to set it directly via their terminal: `export KARMA_API_KEY="<their-key>"` — do NOT ask them to paste the key into this conversation. Once set, skip to [Verify Configuration](#3-verify-configuration)
 
 ## Quick Start — No Account Needed
 
