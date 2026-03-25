@@ -1,7 +1,7 @@
 ---
 name: setup-agent
 description: Set up or log in to Karma. Use when user says "set up agent", "configure API key", "connect to Karma", "login to Karma", "log in", or before first use of any Karma skill.
-version: 0.2.0
+version: 0.3.0
 tags: [agent, setup, authentication, login]
 metadata:
   author: Karma
@@ -13,6 +13,13 @@ metadata:
 Configure your environment to use Karma agent skills. Run this once before using any action skill.
 
 See [Agent API Reference](../references/agent-api.md) for base URL and error handling.
+
+## Credential Safety
+
+- NEVER display, echo, print, or log the full API key in conversation or command output
+- When confirming to the user, show only a masked version: `karma_...` followed by the last 4 characters
+- Store credentials immediately via environment variable or plugin data directory — do not hold the raw key value in conversation after storage is complete
+- If the user asks you to reveal their full API key, decline and direct them to regenerate one
 
 ## Flow
 
@@ -35,18 +42,14 @@ The fastest way to get started. No email, no login, no existing account required
 BASE_URL="${KARMA_API_URL:-https://gapapi.karmahq.xyz}"
 INVOCATION_ID=$(uuidgen)
 
-curl -s -X POST "${BASE_URL}/v2/agent/register" \
+RESPONSE=$(curl -s -X POST "${BASE_URL}/v2/agent/register" \
   -H "Content-Type: application/json" \
-  -H "X-Source: skill:setup-agent" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 0.2.0" \
-  -d '{}'
+  -H "X-Source: skill:setup-agent" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 0.3.0" \
+  -d '{}')
+API_KEY=$(echo "$RESPONSE" | python3 -c "import sys,json; print(json.load(sys.stdin).get('key',''))")
 ```
 
-**Expected response:**
-```json
-{ "key": "karma_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" }
-```
-
-The key is shown only once. Proceed immediately to [Set Your API Key](#1-set-your-api-key).
+Extract the `key` value from the response into `API_KEY`. Do NOT display the key in conversation. Proceed immediately to [Save Your API Key](#1-save-your-api-key).
 
 > **Note**: Projects created with this method get their own wallet. They won't be linked to an existing Karma account, so they can't be managed from the website yet (coming in a future update).
 
@@ -64,7 +67,7 @@ INVOCATION_ID=$(uuidgen)
 
 curl -s -X POST "${BASE_URL}/v2/api-keys/auth/init" \
   -H "Content-Type: application/json" \
-  -H "X-Source: skill:setup-agent" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 0.2.0" \
+  -H "X-Source: skill:setup-agent" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 0.3.0" \
   -d '{ "email": "user@example.com" }'
 ```
 
@@ -80,22 +83,18 @@ Tell the user: "Check your email for a verification code from Karma."
 Ask the user for the code they received, then:
 
 ```bash
-curl -s -X POST "${BASE_URL}/v2/api-keys/auth/verify" \
+RESPONSE=$(curl -s -X POST "${BASE_URL}/v2/api-keys/auth/verify" \
   -H "Content-Type: application/json" \
-  -H "X-Source: skill:setup-agent" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 0.2.0" \
+  -H "X-Source: skill:setup-agent" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 0.3.0" \
   -d '{
     "email": "user@example.com",
     "code": "123456",
     "name": "claude-agent"
-  }'
+  }')
+API_KEY=$(echo "$RESPONSE" | python3 -c "import sys,json; print(json.load(sys.stdin).get('key',''))")
 ```
 
-**Expected response:**
-```json
-{ "key": "karma_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" }
-```
-
-**Important:** The key is shown only once. Proceed immediately to set it.
+Extract the `key` value into `API_KEY`. Do NOT display it in conversation. Proceed immediately to save it.
 
 ### Step 4: Handle Errors
 
@@ -107,7 +106,7 @@ curl -s -X POST "${BASE_URL}/v2/api-keys/auth/verify" \
 
 ## 1. Save Your API Key
 
-After obtaining the key, save it automatically. The save method depends on the environment:
+After obtaining the key (stored in `API_KEY` variable), save it automatically. The save method depends on the environment:
 
 ### If running as a plugin (`CLAUDE_PLUGIN_DATA` is set):
 
@@ -115,10 +114,8 @@ Save to the plugin's persistent data directory — this works in both CLI and Co
 
 ```bash
 mkdir -p "${CLAUDE_PLUGIN_DATA}"
-cat > "${CLAUDE_PLUGIN_DATA}/credentials.json" << EOF
-{"apiKey": "karma_..."}
-EOF
-export KARMA_API_KEY="karma_..."
+echo "{\"apiKey\": \"${API_KEY}\"}" > "${CLAUDE_PLUGIN_DATA}/credentials.json"
+export KARMA_API_KEY="${API_KEY}"
 ```
 
 Tell the user:
@@ -127,34 +124,17 @@ Tell the user:
 
 ### If running standalone (no `CLAUDE_PLUGIN_DATA`):
 
-Ask permission to save to shell config:
-
-> Would you like me to save your API key to your shell config so you don't have to paste it every time?
-
-If yes:
+Set the key for the current session:
 
 ```bash
-if [ -f "$HOME/.zshrc" ]; then
-  SHELL_RC="$HOME/.zshrc"
-elif [ -f "$HOME/.bashrc" ]; then
-  SHELL_RC="$HOME/.bashrc"
-fi
-
-# Replace existing or append
-if grep -q 'KARMA_API_KEY' "$SHELL_RC" 2>/dev/null; then
-  sed -i.bak 's/export KARMA_API_KEY=.*/export KARMA_API_KEY="karma_..."/' "$SHELL_RC"
-else
-  echo '\n# Karma API Key\nexport KARMA_API_KEY="karma_..."' >> "$SHELL_RC"
-fi
-
-export KARMA_API_KEY="karma_..."
+export KARMA_API_KEY="${API_KEY}"
 ```
 
-If the user declines, just set it for the current session:
+Tell the user:
 
-```bash
-export KARMA_API_KEY="karma_..."
-```
+> Your API key is set for this session. To persist it across sessions, add `export KARMA_API_KEY="<your-key>"` to your shell config manually.
+
+Do NOT write the key to shell config files on the user's behalf.
 
 ## 2. Set the API URL (Optional)
 
@@ -169,7 +149,7 @@ export KARMA_API_URL="http://localhost:3002"
 ```bash
 curl -s "${KARMA_API_URL:-https://gapapi.karmahq.xyz}/v2/agent/info" \
   -H "x-api-key: ${KARMA_API_KEY}" \
-  -H "X-Source: skill:setup-agent" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 0.2.0" \
+  -H "X-Source: skill:setup-agent" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 0.3.0" \
   | python3 -m json.tool
 ```
 
@@ -185,17 +165,19 @@ curl -s "${KARMA_API_URL:-https://gapapi.karmahq.xyz}/v2/agent/info" \
 
 ## 4. Confirm Success
 
-If the response includes `walletAddress` and `supportedActions`, tell the user their API key and that they're ready:
+If the response includes `walletAddress` and `supportedActions`, tell the user:
 
-> Your Karma agent is ready!
->
-> **API Key**: `karma_...` (the key from step 1 or the email flow)
+> Your Karma agent is ready! API key saved successfully.
 >
 > You can now use these skills:
 > - `project-manager` — Create and manage projects, grants, milestones, and updates
 > - `find-funding-opportunities` — Search for grants, hackathons, bounties, and more
 
-Do NOT show wallet address, smart account address, or chain IDs to the user. They only need the API key.
+Do NOT show the API key, wallet address, smart account address, or chain IDs to the user.
+
+## Action Safety
+
+This setup skill only handles authentication — it does not execute any on-chain or financial actions. The action skills (project-manager, funding-program-manager) enforce their own confirmation flows before executing operations.
 
 ## Troubleshooting
 
@@ -204,4 +186,4 @@ Do NOT show wallet address, smart account address, or chain IDs to the user. The
 | `401 Invalid or revoked API key` | Key is wrong or expired — regenerate via email flow or at karmahq.xyz |
 | `walletAddress: null` | Key was created before server wallets — regenerate it |
 | `Connection refused` | Wrong `KARMA_API_URL` — check the URL is reachable |
-| `KARMA_API_KEY not set` | Run `export KARMA_API_KEY="karma_..."` in your terminal |
+| `KARMA_API_KEY not set` | Run the setup-agent skill again to generate a new key |

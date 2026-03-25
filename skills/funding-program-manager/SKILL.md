@@ -33,63 +33,28 @@ INVOCATION_ID=$(uuidgen)
 
 ## Setup
 
-If `KARMA_API_KEY` is already set, skip to [Verify](#verify).
-
-Otherwise use the `AskUserQuestion` tool with these options:
-
-- Question: "You need a Karma API key to continue. How would you like to set it up?"
-- Options: ["Quick start — Generate instantly (no account needed)", "Email login — Link to existing Karma account", "I already have a key"]
-
-### Quick Start (No Account Needed)
-
-```bash
-curl -s -X POST "${BASE_URL}/v2/agent/register" \
-  -H "Content-Type: application/json" \
-  -H "X-Source: skill:funding-program-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 1.0.0" \
-  -d '{}'
-```
-
-Returns `{ "apiKey": "karma_..." }` — shown only once.
-
-**Important**: Always send `-d '{}'` — an empty body causes a 400 error.
-
-### Email Login
-
-1. Ask for email
-2. `POST ${BASE_URL}/v2/api-keys/auth/init` with `{ "email": "..." }`
-3. Ask for code → `POST ${BASE_URL}/v2/api-keys/auth/verify` with `{ "email": "...", "code": "...", "name": "claude-agent" }`
-4. Returns `{ "key": "karma_..." }`
-
-### Save API Key
-
-After obtaining the key, save it automatically based on the environment:
-
-**If `CLAUDE_PLUGIN_DATA` is set** (plugin user — CLI or Cowork):
-
-```bash
-mkdir -p "${CLAUDE_PLUGIN_DATA}"
-echo '{"apiKey": "karma_..."}' > "${CLAUDE_PLUGIN_DATA}/credentials.json"
-export KARMA_API_KEY="karma_..."
-```
-
-**If not set** (standalone CLI user): Ask to save to shell config:
-
-```bash
-if [ -f "$HOME/.zshrc" ]; then SHELL_RC="$HOME/.zshrc"
-elif [ -f "$HOME/.bashrc" ]; then SHELL_RC="$HOME/.bashrc"; fi
-grep -q 'KARMA_API_KEY' "$SHELL_RC" 2>/dev/null && sed -i.bak 's/export KARMA_API_KEY=.*/export KARMA_API_KEY="karma_..."/' "$SHELL_RC" || echo '\n# Karma API Key\nexport KARMA_API_KEY="karma_..."' >> "$SHELL_RC"
-export KARMA_API_KEY="karma_..."
-```
-
-### Verify
+If `KARMA_API_KEY` is already set, verify it works:
 
 ```bash
 curl -s "${BASE_URL}/v2/agent/info" \
-  -H "x-api-key: ${KARMA_API_KEY}" \
-  -H "X-Source: skill:funding-program-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 1.0.0"
+  -H "x-api-key: ${API_KEY}" \
+  -H "X-Source: skill:funding-program-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 1.1.0"
 ```
 
 If response includes `walletAddress` → ready.
+
+If `KARMA_API_KEY` is not set, tell the user:
+
+> You need to set up your Karma agent first. Run the **setup-agent** skill to configure your API key.
+
+Do NOT handle API key registration, storage, or display in this skill — that is setup-agent's responsibility.
+
+## Action Safety
+
+Before executing ANY action that creates or modifies program data:
+- Confirm the action details with the user before executing
+- Never batch multiple actions without explicit user approval for each
+- For actions involving funding amounts or payouts, require the user to confirm the exact amount
 
 ---
 
@@ -843,7 +808,7 @@ curl -s -X POST "${BASE_URL}/v2/applications/${REFERENCE_NUMBER}/comments" \
 | Status | Meaning | Action |
 |--------|---------|--------|
 | 400 | Bad params | Show error, help fix |
-| 401 | Invalid API key | Tell user to check `KARMA_API_KEY` or run setup |
+| 401 | Invalid API key | Tell user to run the **setup-agent** skill to reconfigure their API key |
 | 403 | Insufficient permissions | User lacks the required role for this program |
 | 404 | Not found | Check reference number or program ID |
 | 429 | Rate limited (60/min) | Wait and retry |

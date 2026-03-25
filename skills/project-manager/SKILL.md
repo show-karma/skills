@@ -32,72 +32,7 @@ INVOCATION_ID=$(uuidgen)
 
 ## Setup
 
-If `KARMA_API_KEY` is already set, skip to [Verify](#verify).
-
-Otherwise use the `AskUserQuestion` tool with these options:
-
-- Question: "You need a Karma API key to continue. How would you like to set it up?"
-- Options: ["Quick start — Generate instantly (no account needed)", "Email login — Link to existing Karma account", "I already have a key"]
-
-### Quick Start (No Account Needed)
-
-```bash
-curl -s -X POST "${BASE_URL}/v2/agent/register" \
-  -H "Content-Type: application/json" \
-  -H "X-Source: skill:project-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 2.0.0" \
-  -d '{}'
-```
-
-Returns `{ "apiKey": "karma_..." }` — shown only once.
-
-**Important**: Always send `-d '{}'` — an empty body causes a 400 error.
-
-### Email Login
-
-1. Ask for email
-2. `POST ${BASE_URL}/v2/api-keys/auth/init` with `{ "email": "..." }`
-3. Ask for code → `POST ${BASE_URL}/v2/api-keys/auth/verify` with `{ "email": "...", "code": "...", "name": "claude-agent" }`
-4. Returns `{ "key": "karma_..." }`
-
-| Error | Action |
-|-------|--------|
-| `400 Invalid or expired code` | Ask to recheck or request new code |
-| `409 Active key already exists` | Use existing key or revoke from website |
-
-### Save API Key
-
-After obtaining the key (from quick start, email login, or user pasting it), save it automatically based on the environment:
-
-**If `CLAUDE_PLUGIN_DATA` is set** (plugin user — CLI or Cowork):
-
-```bash
-mkdir -p "${CLAUDE_PLUGIN_DATA}"
-echo '{"apiKey": "karma_..."}' > "${CLAUDE_PLUGIN_DATA}/credentials.json"
-export KARMA_API_KEY="karma_..."
-```
-
-> Your API key has been saved and will be loaded automatically in future sessions.
-
-**If not set** (standalone CLI user), ask permission to save to shell config:
-
-> Would you like me to save your API key to your shell config so you don't have to paste it every time?
-
-If yes:
-
-```bash
-if [ -f "$HOME/.zshrc" ]; then SHELL_RC="$HOME/.zshrc"
-elif [ -f "$HOME/.bashrc" ]; then SHELL_RC="$HOME/.bashrc"; fi
-grep -q 'KARMA_API_KEY' "$SHELL_RC" 2>/dev/null && sed -i.bak 's/export KARMA_API_KEY=.*/export KARMA_API_KEY="karma_..."/' "$SHELL_RC" || echo '\n# Karma API Key\nexport KARMA_API_KEY="karma_..."' >> "$SHELL_RC"
-export KARMA_API_KEY="karma_..."
-```
-
-If the user declines, just set it for the current session:
-
-```bash
-export KARMA_API_KEY="karma_..."
-```
-
-### Verify
+If `KARMA_API_KEY` is already set, verify it works:
 
 ```bash
 curl -s "${BASE_URL}/v2/agent/info" \
@@ -105,9 +40,20 @@ curl -s "${BASE_URL}/v2/agent/info" \
   -H "X-Source: skill:project-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 2.0.0"
 ```
 
-If response includes `walletAddress` and `supportedActions` → ready. Do NOT show wallet/chain details to the user. Tell them:
+If response includes `walletAddress` and `supportedActions` → ready.
 
-> Your Karma agent is ready! You can now create projects, grants, milestones, and post updates.
+If `KARMA_API_KEY` is not set, tell the user:
+
+> You need to set up your Karma agent first. Run the **setup-agent** skill to configure your API key.
+
+Do NOT handle API key registration, storage, or display in this skill — that is setup-agent's responsibility.
+
+## Action Safety
+
+Before executing ANY on-chain action (creating projects, grants, milestones, updates):
+- Confirm the action details with the user before executing
+- Never batch multiple on-chain actions without explicit user approval for each
+- For actions involving funding amounts, require the user to confirm the exact amount
 
 ---
 
@@ -527,7 +473,7 @@ Each program has: `programId`, `metadata.title`. Always include `programId` when
 | Status | Meaning | Action |
 |--------|---------|--------|
 | 400 | Bad params | Show error, help fix |
-| 401 | Invalid API key | Tell user to check `KARMA_API_KEY` or run setup |
+| 401 | Invalid API key | Tell user to run the **setup-agent** skill to reconfigure their API key |
 | 429 | Rate limited (60/min) | Wait and retry |
 | 500 | Server error | Retry once, then report |
 
