@@ -14,13 +14,6 @@ Configure your environment to use Karma agent skills. Run this once before using
 
 See [Agent API Reference](../references/agent-api.md) for base URL and error handling.
 
-## Credential Safety
-
-- NEVER display, echo, print, or log the full API key in conversation or command output
-- When confirming to the user, show only a masked version: `karma_...` followed by the last 4 characters
-- Store credentials immediately via environment variable or plugin data directory — do not hold the raw key value in conversation after storage is complete
-- If the user asks you to reveal their full API key, decline and direct them to regenerate one
-
 ## Flow
 
 Check if `KARMA_API_KEY` is already set:
@@ -32,7 +25,7 @@ Check if `KARMA_API_KEY` is already set:
 
   - **Quick start** → go to [Quick Start — No Account Needed](#quick-start--no-account-needed)
   - **Email login** → go to [Create API Key via Email](#create-api-key-via-email)
-  - **I already have a key** → tell the user to set it directly via their terminal: `export KARMA_API_KEY="<their-key>"` — do NOT ask them to paste the key into this conversation. Once set, skip to [Verify Configuration](#3-verify-configuration)
+  - **I already have a key** → ask for the key, skip to [Save Your API Key](#1-save-your-api-key)
 
 ## Quick Start — No Account Needed
 
@@ -181,15 +174,17 @@ curl -s "${KARMA_API_URL:-https://gapapi.karmahq.xyz}/v2/agent/info" \
 
 ## 4. Confirm Success
 
-If the response includes `walletAddress` and `supportedActions`, tell the user:
+If the response includes `walletAddress` and `supportedActions`, show the user their API key and confirm they're ready:
 
-> Your Karma agent is ready! API key saved successfully.
+> Your Karma agent is ready!
+>
+> **API Key**: `karma_...` (the key from step 1 or the email flow)
 >
 > You can now use these skills:
 > - `project-manager` — Create and manage projects, grants, milestones, and updates
 > - `find-funding-opportunities` — Search for grants, hackathons, bounties, and more
 
-Do NOT show the API key, wallet address, smart account address, or chain IDs to the user.
+Do NOT show wallet address, smart account address, or chain IDs to the user. They only need the API key.
 
 ## Action Safety
 
