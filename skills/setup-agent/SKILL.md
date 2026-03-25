@@ -130,11 +130,27 @@ Set the key for the current session:
 export KARMA_API_KEY="${API_KEY}"
 ```
 
-Tell the user:
+Then ask the user if they want to persist it:
 
-> Your API key is set for this session. To persist it across sessions, add `export KARMA_API_KEY="<your-key>"` to your shell config manually.
+> Your API key is set for this session. Would you like me to save it to your shell config so it persists across sessions?
 
-Do NOT write the key to shell config files on the user's behalf.
+If yes:
+
+```bash
+if [ -f "$HOME/.zshrc" ]; then
+  SHELL_RC="$HOME/.zshrc"
+elif [ -f "$HOME/.bashrc" ]; then
+  SHELL_RC="$HOME/.bashrc"
+fi
+
+if grep -q 'KARMA_API_KEY' "$SHELL_RC" 2>/dev/null; then
+  sed -i.bak "s/export KARMA_API_KEY=.*/export KARMA_API_KEY=\"${API_KEY}\"/" "$SHELL_RC"
+else
+  echo "\n# Karma API Key\nexport KARMA_API_KEY=\"${API_KEY}\"" >> "$SHELL_RC"
+fi
+```
+
+If no, the key is only available for the current session.
 
 ## 2. Set the API URL (Optional)
 
