@@ -42,7 +42,7 @@ RESPONSE=$(curl -s -X POST "${BASE_URL}/v2/agent/register" \
 API_KEY=$(echo "$RESPONSE" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('key','') or d.get('apiKey',''))")
 ```
 
-Extract the `key` value from the response into `API_KEY`. Do NOT display the key in conversation. Proceed immediately to [Save Your API Key](#1-save-your-api-key).
+Extract the `key` value from the response into `API_KEY`. Proceed immediately to [Save Your API Key](#1-save-your-api-key).
 
 > **Note**: Projects created with this method get their own wallet. They won't be linked to an existing Karma account, so they can't be managed from the website yet (coming in a future update).
 
@@ -87,7 +87,7 @@ RESPONSE=$(curl -s -X POST "${BASE_URL}/v2/api-keys/auth/verify" \
 API_KEY=$(echo "$RESPONSE" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('key','') or d.get('apiKey',''))")
 ```
 
-Extract the `key` value into `API_KEY`. Do NOT display it in conversation. Proceed immediately to save it.
+Extract the `key` value into `API_KEY`. Proceed immediately to save it.
 
 ### Step 4: Handle Errors
 
