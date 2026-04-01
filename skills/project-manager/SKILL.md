@@ -1,8 +1,8 @@
 ---
 name: project-manager
-description: Manage projects, grants, milestones, and updates on the Karma protocol. Use when user says "create a project", "new project", "add a grant", "record funding", "add milestone", "complete milestone", "post an update", "project progress", "grant update", "update project", "edit project", "edit grant", "complete grant", "add roadmap milestone", "report impact", "endorse project", "add team member", "set up agent", "configure API key", "check payouts", "payout status", "payout history", "total disbursed", "view invoices", "download invoice", or any project management action. Also supports dynamic endpoint discovery from the Swagger docs for any API operation not explicitly listed.
+description: Manage projects, grants, milestones, and updates on the Karma protocol. Use when user says "create a project", "new project", "add a grant", "record funding", "add milestone", "complete milestone", "post an update", "project progress", "grant update", "update project", "edit project", "edit grant", "complete grant", "add roadmap milestone", "report impact", "endorse project", "add team member", "set up agent", "configure API key", "check payouts", "payout status", "payout history", "total disbursed", "view invoices", "download invoice", or any project management action.
 version: 2.0.0
-tags: [agent, project, grant, milestone, update, create, manage, impact, endorsement, members, payout, invoice, api-discovery]
+tags: [agent, project, grant, milestone, update, create, manage, impact, endorsement, members, payout, invoice]
 metadata:
   author: Karma
   category: project-management
@@ -549,29 +549,6 @@ Returns: `{ "downloadUrl": "..." }`
 
 ---
 
-## Dynamic Endpoint Discovery (Fallback)
-
-When the user requests an action not covered by the endpoints above, discover the right endpoint from the live API schema. This requires only `curl` — no other tools.
-
-### Step 1: Fetch the API schema
-
-```bash
-curl -s "${BASE_URL}/v2/docs/json" \
-  -H "X-Source: skill:project-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 2.0.0"
-```
-
-Read through the `paths` object in the response to find endpoints matching the user's request. Each path contains its HTTP method, parameters, request body schema, and response schema.
-
-### Step 2: Call the discovered endpoint
-
-Use the schema to construct the correct `curl` call. Always include:
-- Auth: `-H "x-api-key: ${API_KEY}"`
-- Tracking headers: `-H "X-Source: skill:project-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 2.0.0"`
-
-If the endpoint returns 403, check the schema for a `/public` variant of the same path and try that instead.
-
----
-
 ## Natural Language Mapping
 
 | User says | Action |
@@ -598,7 +575,6 @@ If the endpoint returns 403, check the schema for a `/public` variant of the sam
 | "payout config", "payment setup" | Payout Config — look up grantUID first |
 | "view invoices", "check invoices", "invoice status" | Grant Invoices — look up grantUID first |
 | "download invoice" | Invoice Download — get `invoiceFileKey` from Grant Invoices first |
-| Any other action not listed above | Use **Dynamic Endpoint Discovery** as fallback |
 
 ---
 
@@ -625,4 +601,3 @@ If the endpoint returns 403, check the schema for a `/public` variant of the sam
 | Partial project update | Read current field values, apply user's changes, then update |
 | Multiple grants on project | Show list, ask which one |
 | Date given as string | Convert to Unix timestamp in seconds |
-| Action not in hardcoded list | Use Dynamic Endpoint Discovery — fetch API schema, find matching endpoint, call it |
