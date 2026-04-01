@@ -1,8 +1,8 @@
 ---
 name: project-manager
-description: Manage projects, grants, milestones, and updates on the Karma protocol. Use when user says "create a project", "new project", "add a grant", "record funding", "add milestone", "complete milestone", "post an update", "project progress", "grant update", "update project", "edit project", "edit grant", "complete grant", "add roadmap milestone", "report impact", "endorse project", "add team member", "set up agent", "configure API key", or any project management action.
+description: Manage projects, grants, milestones, and updates on the Karma protocol. Use when user says "create a project", "new project", "add a grant", "record funding", "add milestone", "complete milestone", "post an update", "project progress", "grant update", "update project", "edit project", "edit grant", "complete grant", "add roadmap milestone", "report impact", "endorse project", "add team member", "set up agent", "configure API key", "check payouts", "payout status", "payout history", "total disbursed", "view invoices", "download invoice", or any project management action.
 version: 2.0.0
-tags: [agent, project, grant, milestone, update, create, manage, impact, endorsement, members]
+tags: [agent, project, grant, milestone, update, create, manage, impact, endorsement, members, payout, invoice]
 metadata:
   author: Karma
   category: project-management
@@ -443,6 +443,110 @@ curl -s -H "X-Source: skill:project-manager" -H "X-Invocation-Id: $INVOCATION_ID
 
 Each program has: `programId`, `metadata.title`. Always include `programId` when the user mentions a specific program.
 
+### Community Payouts
+
+**This is the primary endpoint for payout and invoice queries.** Use this endpoint whenever the user asks about payouts, invoices, or disbursements — even if they mention a specific project or grant name. Use the `search` param to filter by name. Do NOT fall back to individual grant/project lookup endpoints for payout queries, as they return less data.
+
+```bash
+curl -s "${BASE_URL}/v2/communities/${COMMUNITY_UID}/payouts?page=1&limit=25" \
+  -H "x-api-key: ${API_KEY}" \
+  -H "X-Source: skill:project-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 2.0.0"
+```
+
+**Display rules (MANDATORY):**
+- Each item in `payload[]` represents a different project+grant combination
+- The first column in every table MUST be **Project** (from `item.project.title`)
+- The second column MUST be **Grant** (from `item.grant.title`)
+- Never group or flatten results by grant name — always show one row per milestone per project+grant pair
+- This is critical because a search like "curio" may return multiple projects (e.g., "Curio Storage" and "Curio Dashboard") and the user needs to tell them apart
+
+Optional query params:
+
+| Param | Description |
+|-------|-------------|
+| `page` | Page number (default: 1) |
+| `limit` | Items per page (default: 10, max: 1000) |
+| `programId` | Filter by program ID |
+| `status` | Filter by payout status |
+| `agreementStatus` | `signed` or `not_signed` |
+| `invoiceStatus` | `all_received`, `needs_invoices`, or `has_invoices` |
+| `search` | Search by project or grant name (max 200 chars) |
+| `sortBy` | `project_title`, `grant_title`, `payout_amount`, `disbursed_amount`, or `status` |
+| `sortOrder` | `asc` or `desc` (default: `asc`) |
+
+Requires COMMUNITY_VIEW permission. If 403, try the public endpoint:
+
+```bash
+curl -s "${BASE_URL}/v2/communities/${COMMUNITY_UID}/payouts/public?page=1&limit=25" \
+  -H "X-Source: skill:project-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 2.0.0"
+```
+
+The public endpoint requires no auth but returns fewer fields (sensitive data stripped).
+
+### Grant Payout History
+
+Get disbursement history for a specific grant.
+
+```bash
+curl -s "${BASE_URL}/v2/payouts/grant/${GRANT_UID}/history?page=1&limit=20" \
+  -H "x-api-key: ${API_KEY}" \
+  -H "X-Source: skill:project-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 2.0.0"
+```
+
+### Grant Total Disbursed
+
+Get the total amount already paid out for a grant.
+
+```bash
+curl -s "${BASE_URL}/v2/payouts/grant/${GRANT_UID}/total-disbursed" \
+  -H "x-api-key: ${API_KEY}" \
+  -H "X-Source: skill:project-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 2.0.0"
+```
+
+### Pending Disbursements
+
+List disbursements awaiting processing for a community.
+
+```bash
+curl -s "${BASE_URL}/v2/payouts/community/${COMMUNITY_UID}/pending?page=1&limit=20" \
+  -H "x-api-key: ${API_KEY}" \
+  -H "X-Source: skill:project-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 2.0.0"
+```
+
+### Payout Config for a Grant
+
+Get the payout configuration (payment address, token, schedule) for a grant.
+
+```bash
+curl -s "${BASE_URL}/v2/payout-config/grant/${GRANT_UID}" \
+  -H "x-api-key: ${API_KEY}" \
+  -H "X-Source: skill:project-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 2.0.0"
+```
+
+### Grant Invoices
+
+List all milestone invoices for a grant.
+
+```bash
+curl -s "${BASE_URL}/v2/milestone-invoices/grant/${GRANT_UID}" \
+  -H "x-api-key: ${API_KEY}" \
+  -H "X-Source: skill:project-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 2.0.0"
+```
+
+Each invoice has: `id`, `grantUID`, `milestoneUID`, `milestoneLabel`, `invoiceStatus` (`not_submitted`, `submitted`, `received`, `paid`), `invoiceReceivedAt`, `invoiceFileKey`
+
+### Invoice Download
+
+Get a temporary download URL for an invoice file (15 min TTL). Requires the `invoiceFileKey` from the grant invoices response.
+
+```bash
+curl -s "${BASE_URL}/v2/milestone-invoices/download?key=${INVOICE_FILE_KEY}" \
+  -H "x-api-key: ${API_KEY}" \
+  -H "X-Source: skill:project-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 2.0.0"
+```
+
+Returns: `{ "downloadUrl": "..." }`
+
 ---
 
 ## Natural Language Mapping
@@ -464,6 +568,13 @@ Each program has: `programId`, `metadata.title`. Always include `programId` when
 | "endorse project", "support project" | `endorseProject` — look up projectUID, inherit chain |
 | "add team member", "add member", "invite to project" | `addProjectMembers` — look up projectUID, inherit chain |
 | "create project with grant" | `createProjectWithGrant` |
+| "check payouts", "payout status", "show payouts", "invoices", "check invoices" | **Always** use Community Payouts endpoint (`/v2/communities/:id/payouts`) with `search` param — this is the primary endpoint for all payout/invoice queries |
+| "payout history", "disbursement history" | Grant Payout History — look up grantUID first |
+| "total disbursed", "how much was paid" | Grant Total Disbursed — look up grantUID first |
+| "pending payouts", "pending disbursements" | Pending Disbursements — look up communityUID |
+| "payout config", "payment setup" | Payout Config — look up grantUID first |
+| "view invoices", "check invoices", "invoice status" | Grant Invoices — look up grantUID first |
+| "download invoice" | Invoice Download — get `invoiceFileKey` from Grant Invoices first |
 
 ---
 
@@ -472,6 +583,7 @@ Each program has: `programId`, `metadata.title`. Always include `programId` when
 | Status | Meaning | Action |
 |--------|---------|--------|
 | 400 | Bad params | Show error, help fix |
+| 403 | Forbidden | Check if a `/public` variant of the endpoint exists. If not, tell user they need higher API key permissions |
 | 401 | Invalid API key | Tell user to run the **setup-agent** skill to reconfigure their API key |
 | 429 | Rate limited (60/min) | Wait and retry |
 | 500 | Server error | Retry once, then report |
