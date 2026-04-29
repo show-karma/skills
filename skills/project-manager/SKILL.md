@@ -1,7 +1,7 @@
 ---
 name: project-manager
 description: Manage projects, grants, milestones, and updates on the Karma protocol. Use when user says "create a project", "new project", "add a grant", "record funding", "add milestone", "complete milestone", "post an update", "project progress", "grant update", "update project", "edit project", "edit grant", "complete grant", "add roadmap milestone", "report impact", "endorse project", "add team member", "set up agent", "configure API key", "check payouts", "payout status", "payout history", "total disbursed", "view invoices", "download invoice", or any project management action. Also supports dynamic endpoint discovery from the Swagger docs for any API operation not explicitly listed.
-version: 2.0.0
+version: 2.1.0
 tags: [agent, project, grant, milestone, update, create, manage, impact, endorsement, members, payout, invoice, api-discovery]
 metadata:
   author: Karma
@@ -10,9 +10,15 @@ metadata:
 
 # Project Manager
 
-Manage projects, grants, milestones, and updates on the Karma protocol via a REST API. All operations are gasless — the API handles everything server-side.
+Manage projects, grants, milestones, and updates on the Karma protocol. All operations are gasless — the platform handles everything server-side.
 
-Full API docs: `https://gapapi.karmahq.xyz/v2/docs/static/index.html`
+**For READ operations, prefer the Karma MCP tools** (auto-registered for this plugin via `.mcp.json`). The `karma_*` tools collapse multi-step lookups into single calls and return structured envelopes the agent can quote directly. See [references/mcp-tools.md](../references/mcp-tools.md) for the catalog and the "Looking Up Data" section below for the intent → tool table.
+
+Use REST + `curl` only for:
+- Write actions via `POST /v2/agent/execute` (createProject, createMilestone, etc.)
+- Admin views with no MCP equivalent yet (community payouts table, pending disbursements, payout config, grant invoices, invoice download)
+
+Full REST API docs: `https://gapapi.karmahq.xyz/v2/docs/static/index.html`
 
 ```bash
 BASE_URL="${KARMA_API_URL:-https://gapapi.karmahq.xyz}"
@@ -400,65 +406,55 @@ Each member object:
 
 ---
 
-## Looking Up Data
+## Looking Up Data — prefer MCP tools
 
-### Find a Project
+The Karma MCP server is auto-registered for this plugin (see `.mcp.json` and [references/mcp-tools.md](../references/mcp-tools.md)). For READ operations, **call the `karma_*` MCP tool by name** — do not shell out to `curl`. The MCP envelope already carries a one-sentence `summary` plus structured `data`, `identifiers`, and `nextActions`, so you can answer the user without re-parsing JSON yourself.
 
-```bash
-curl -s -H "X-Source: skill:project-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 2.0.0" \
-  "${BASE_URL}/v2/projects?q=SEARCH_TERM&limit=5&page=1"
+### Picking the right tool by intent
+
+| User asks | Call this MCP tool | Required args |
+|---|---|---|
+| "Find project / community / program X" | `karma_search_discover` | `query` |
+| "What is the status of X?" / "How is X doing?" | `karma_project_get_status` | `projectIdOrSlug` |
+| "Show me the project record for X" | `karma_project_get_details` | `projectIdOrSlug` |
+| "What grants does X have?" / "List X's grants" | `karma_project_get_details` (grants live in the response) | `projectIdOrSlug` |
+| "How many milestones has X completed?" | `karma_project_get_status` (overall) **or** `karma_project_list_milestones` (per-milestone) | `projectIdOrSlug` |
+| "How many milestones has X completed in &lt;program&gt;?" | `karma_project_get_progress_in_program` | `projectIdOrSlug`, `programId` |
+| "How much has been disbursed to project X?" | `karma_project_get_disbursement_total` | `projectIdOrSlug` |
+| "Per-payout history for grant Y" | *(no MCP tool — use REST `/v2/payouts/grant/:uid/history`)* | — |
+| "Who got funded in &lt;program&gt; and how much?" | `karma_program_get_funding_summary` | `programId` |
+| "Programs in &lt;community&gt;" / "Community overview" | `karma_community_get_overview` | `communityIdOrSlug` |
+| "Program details / report for &lt;program&gt;" | `karma_program_get_details` or `karma_program_generate_report` | `programId` |
+| "What are MY projects / applications?" | `karma_user_get_workspace` | *(none — uses your API key's address)* |
+
+Each MCP response is a typed envelope:
+
+```json
+{
+  "summary": "Project \"drand\" has received 0 disbursements ...",
+  "data":   { ... },
+  "identifiers": { "projectSlug": "drand", "grantUIDs": [...], "programIds": [...] },
+  "nextActions": [ "...", "..." ]
+}
 ```
 
-Each result has: `uid`, `chainID`, `details.title`, `details.slug`, `details.description`
+Quote `summary` to the user. Pull stable IDs from `identifiers` for follow-up tool calls. Read `nextActions` to decide what to chain next.
 
-### Get Project by UID or Slug
+### When the answer needs a community-wide payout view
 
-```bash
-curl -s -H "X-Source: skill:project-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 2.0.0" \
-  "${BASE_URL}/v2/projects/PROJECT_UID_OR_SLUG"
-```
-
-### Get Project Grants
-
-```bash
-curl -s -H "X-Source: skill:project-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 2.0.0" \
-  "${BASE_URL}/v2/projects/PROJECT_UID_OR_SLUG/grants"
-```
-
-Each grant has: `uid`, `details.title`, `milestones[]`
-
-### Search Communities
-
-```bash
-curl -s -H "X-Source: skill:project-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 2.0.0" \
-  "${BASE_URL}/v2/communities/?limit=5&page=1"
-```
-
-### Get Community Programs
-
-```bash
-curl -s -H "X-Source: skill:project-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 2.0.0" \
-  "${BASE_URL}/communities/COMMUNITY_SLUG_OR_UID/programs"
-```
-
-Each program has: `programId`, `metadata.title`. Always include `programId` when the user mentions a specific program.
-
-### Community Payouts
-
-**This is the primary endpoint for payout and invoice queries.** Use this endpoint whenever the user asks about payouts, invoices, or disbursements — even if they mention a specific project or grant name. Use the `search` param to filter by name. Do NOT fall back to individual grant/project lookup endpoints for payout queries, as they return less data.
+For multi-grant per-community admin views (the "show me ALL payouts/invoices/agreement statuses across the community" case), there is no MCP equivalent — the per-payout admin panel still goes through REST:
 
 ```bash
 curl -s "${BASE_URL}/v2/communities/${COMMUNITY_UID}/payouts?page=1&limit=25" \
-  -H "x-api-key: ${API_KEY}" \
+  -H "x-api-key: ${KARMA_API_KEY}" \
   -H "X-Source: skill:project-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 2.0.0"
 ```
 
-**Display rules (MANDATORY):**
-- Each item in `payload[]` represents a different project+grant combination
-- The first column in every table MUST be **Project** (from `item.project.title`)
-- The second column MUST be **Grant** (from `item.grant.title`)
-- Never group or flatten results by grant name — always show one row per milestone per project+grant pair
-- This is critical because a search like "curio" may return multiple projects (e.g., "Curio Storage" and "Curio Dashboard") and the user needs to tell them apart
+**Display rules for the community-payouts table (MANDATORY):**
+- Each item in `payload[]` is a different project+grant combination
+- First column **must** be **Project** (`item.project.title`)
+- Second column **must** be **Grant** (`item.grant.title`)
+- Never group/flatten by grant name — always one row per milestone per project+grant pair (a search like "curio" can return both "Curio Storage" and "Curio Dashboard" and the user needs to tell them apart)
 
 Optional query params:
 
@@ -474,78 +470,38 @@ Optional query params:
 | `sortBy` | `project_title`, `grant_title`, `payout_amount`, `disbursed_amount`, or `status` |
 | `sortOrder` | `asc` or `desc` (default: `asc`) |
 
-Requires COMMUNITY_VIEW permission. If 403, try the public endpoint:
+If you get 403 (no COMMUNITY_VIEW permission), fall back to the public endpoint (no auth, fewer fields):
 
 ```bash
 curl -s "${BASE_URL}/v2/communities/${COMMUNITY_UID}/payouts/public?page=1&limit=25" \
   -H "X-Source: skill:project-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 2.0.0"
 ```
 
-The public endpoint requires no auth but returns fewer fields (sensitive data stripped).
+For "what was disbursed to *one project*?" prefer `karma_project_get_disbursement_total` — it composes the project-grant-payout join in a single MCP call with a per-(program, token) breakdown.
 
-### Grant Payout History
-
-Get disbursement history for a specific grant.
+### Other admin endpoints (no MCP equivalent yet)
 
 ```bash
-curl -s "${BASE_URL}/v2/payouts/grant/${GRANT_UID}/history?page=1&limit=20" \
-  -H "x-api-key: ${API_KEY}" \
-  -H "X-Source: skill:project-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 2.0.0"
-```
-
-### Grant Total Disbursed
-
-Get the total amount already paid out for a grant.
-
-```bash
-curl -s "${BASE_URL}/v2/payouts/grant/${GRANT_UID}/total-disbursed" \
-  -H "x-api-key: ${API_KEY}" \
-  -H "X-Source: skill:project-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 2.0.0"
-```
-
-### Pending Disbursements
-
-List disbursements awaiting processing for a community.
-
-```bash
+# Pending disbursements awaiting processing for a community
 curl -s "${BASE_URL}/v2/payouts/community/${COMMUNITY_UID}/pending?page=1&limit=20" \
-  -H "x-api-key: ${API_KEY}" \
+  -H "x-api-key: ${KARMA_API_KEY}" \
   -H "X-Source: skill:project-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 2.0.0"
-```
 
-### Payout Config for a Grant
-
-Get the payout configuration (payment address, token, schedule) for a grant.
-
-```bash
+# Payout config for a grant (payment address, token, schedule)
 curl -s "${BASE_URL}/v2/payout-config/grant/${GRANT_UID}" \
-  -H "x-api-key: ${API_KEY}" \
+  -H "x-api-key: ${KARMA_API_KEY}" \
   -H "X-Source: skill:project-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 2.0.0"
-```
 
-### Grant Invoices
-
-List all milestone invoices for a grant.
-
-```bash
+# Grant invoices: id, milestoneUID, milestoneLabel, invoiceStatus, invoiceReceivedAt, invoiceFileKey
 curl -s "${BASE_URL}/v2/milestone-invoices/grant/${GRANT_UID}" \
-  -H "x-api-key: ${API_KEY}" \
+  -H "x-api-key: ${KARMA_API_KEY}" \
   -H "X-Source: skill:project-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 2.0.0"
-```
 
-Each invoice has: `id`, `grantUID`, `milestoneUID`, `milestoneLabel`, `invoiceStatus` (`not_submitted`, `submitted`, `received`, `paid`), `invoiceReceivedAt`, `invoiceFileKey`
-
-### Invoice Download
-
-Get a temporary download URL for an invoice file (15 min TTL). Requires the `invoiceFileKey` from the grant invoices response.
-
-```bash
+# Invoice download URL (15-min TTL) — pass the invoiceFileKey from the previous call
 curl -s "${BASE_URL}/v2/milestone-invoices/download?key=${INVOICE_FILE_KEY}" \
-  -H "x-api-key: ${API_KEY}" \
+  -H "x-api-key: ${KARMA_API_KEY}" \
   -H "X-Source: skill:project-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 2.0.0"
 ```
-
-Returns: `{ "downloadUrl": "..." }`
 
 ---
 
@@ -591,12 +547,14 @@ If the endpoint returns 403, check the schema for a `/public` variant of the sam
 | "endorse project", "support project" | `endorseProject` — look up projectUID, inherit chain |
 | "add team member", "add member", "invite to project" | `addProjectMembers` — look up projectUID, inherit chain |
 | "create project with grant" | `createProjectWithGrant` |
-| "check payouts", "payout status", "show payouts", "invoices", "check invoices" | **Always** use Community Payouts endpoint (`/v2/communities/:id/payouts`) with `search` param — this is the primary endpoint for all payout/invoice queries |
-| "payout history", "disbursement history" | Grant Payout History — look up grantUID first |
-| "total disbursed", "how much was paid" | Grant Total Disbursed — look up grantUID first |
-| "pending payouts", "pending disbursements" | Pending Disbursements — look up communityUID |
-| "payout config", "payment setup" | Payout Config — look up grantUID first |
-| "view invoices", "check invoices", "invoice status" | Grant Invoices — look up grantUID first |
+| "check payouts" / "payout status" / "show payouts" / "invoices" — admin view spanning many projects | Community Payouts REST endpoint (`/v2/communities/:id/payouts`) with `search` — there is no MCP equivalent for the admin table |
+| "how much disbursed to project X" / "total paid out to X" | `karma_project_get_disbursement_total` (single MCP call, per-(program, token) breakdown) |
+| "who got funded in &lt;program&gt;" | `karma_program_get_funding_summary` (single MCP call, per-currency totals + project names) |
+| "milestones project X has completed in &lt;program&gt;" | `karma_project_get_progress_in_program` |
+| "payout history for grant Y" | REST `/v2/payouts/grant/:uid/history` (no MCP equivalent yet) |
+| "pending payouts", "pending disbursements" — community admin view | Pending Disbursements REST endpoint — look up communityUID first |
+| "payout config", "payment setup" | Payout Config REST endpoint — look up grantUID first |
+| "view invoices", "check invoices", "invoice status" | Grant Invoices REST endpoint — look up grantUID first |
 | "download invoice" | Invoice Download — get `invoiceFileKey` from Grant Invoices first |
 | Any other action not listed above | Use **Dynamic Endpoint Discovery** as fallback |
 

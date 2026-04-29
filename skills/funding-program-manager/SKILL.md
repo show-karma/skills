@@ -1,7 +1,7 @@
 ---
 name: funding-program-manager
 description: Create and manage funding programs on Karma — create programs in the registry, configure intake forms, apply to programs, manage reviewers, applications, milestones, payouts, grant agreements, and AI evaluation. Use when user says "create a program", "new funding program", "set up grants program", "configure intake form", "add form fields", "apply to program", "submit application", "apply for grant", "manage program", "list reviewers", "add reviewer", "remove reviewer", "review applications", "approve application", "reject application", "application status", "list applications", "milestone completions", "pending milestones", "create payout", "disbursement", "payout history", "grant agreement", "sign agreement", "evaluate application", "AI score", "application comment", "enable applications", "update program", or any funding program administration action.
-version: 1.1.0
+version: 1.2.0
 tags: [program, reviewer, application, milestone, payout, agreement, evaluation, admin]
 metadata:
   author: Karma
@@ -12,7 +12,23 @@ metadata:
 
 Manage funding programs end-to-end on the Karma protocol: reviewers, applications, milestones, payouts, grant agreements, and AI evaluation.
 
-Full API docs: `https://gapapi.karmahq.xyz/v2/docs/static/index.html`
+**For READ operations, prefer the Karma MCP tools when one exists:**
+
+| User intent | MCP tool |
+|---|---|
+| Find a program by name | `karma_search_discover` |
+| Program details / status | `karma_program_get_details` |
+| Who got funded + amounts | `karma_program_get_funding_summary` |
+| Status / counts report for a program | `karma_program_generate_report` |
+| Programs in a community / community overview | `karma_community_get_overview` |
+| Project's progress in this program | `karma_project_get_progress_in_program` |
+| Total disbursed to a project | `karma_project_get_disbursement_total` |
+
+The MCP server is auto-registered for this plugin via `.mcp.json`. Catalog: [../references/mcp-tools.md](../references/mcp-tools.md).
+
+WRITE operations and admin flows below stay on REST — they have no MCP equivalent.
+
+Full REST API docs: `https://gapapi.karmahq.xyz/v2/docs/static/index.html`
 
 ```bash
 BASE_URL="${KARMA_API_URL:-https://gapapi.karmahq.xyz}"

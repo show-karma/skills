@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "karma": {
+      "type": "http",
+      "url": "${KARMA_API_URL:-https://gapapi.karmahq.xyz}/mcp",
+      "headers": {
+        "x-api-key": "${KARMA_API_KEY}"
+      },
+      "description": "Karma platform tools (projects, grants, milestones, payouts, funding programs). Set KARMA_API_KEY first via the setup-agent skill. Override KARMA_API_URL for local development (e.g. http://localhost:3005)."
+    }
+  }
+}

@@ -1,7 +1,7 @@
 ---
 name: setup-agent
 description: Set up or log in to Karma. Use when user says "set up agent", "configure API key", "connect to Karma", "login to Karma", "log in", or before first use of any Karma skill.
-version: 0.3.0
+version: 0.4.0
 tags: [agent, setup, authentication, login]
 metadata:
   author: Karma
@@ -172,9 +172,15 @@ curl -s "${KARMA_API_URL:-https://gapapi.karmahq.xyz}/v2/agent/info" \
 }
 ```
 
-## 4. Confirm Success
+## 4. MCP Server Auto-Registration
 
-If the response includes `walletAddress` and `supportedActions`, show the user their API key and confirm they're ready:
+This plugin ships with a `.mcp.json` declaring a `karma` MCP server pointed at `${KARMA_API_URL}/mcp`. Claude Code picks it up on session start, so the read surface (search, project/program details, payouts, milestones, disbursement totals, funding summaries) is available as native MCP tools — no `curl` needed in your skills. See [references/mcp-tools.md](../references/mcp-tools.md) for the tool catalog.
+
+If the `karma_*` tools aren't visible after setup, restart Claude Code so the MCP config loads with the freshly-set `KARMA_API_KEY` env var.
+
+## 5. Confirm Success
+
+If `/v2/agent/info` returned `walletAddress` and `supportedActions`, show the user their API key and confirm they're ready:
 
 > Your Karma agent is ready!
 >
@@ -183,6 +189,8 @@ If the response includes `walletAddress` and `supportedActions`, show the user t
 > You can now use these skills:
 > - `project-manager` — Create and manage projects, grants, milestones, and updates
 > - `find-funding-opportunities` — Search for grants, hackathons, bounties, and more
+>
+> Read operations are served by the Karma MCP server (auto-registered for this plugin). Restart Claude Code if the `karma_*` tools don't show up yet.
 
 Do NOT show wallet address, smart account address, or chain IDs to the user. They only need the API key.
 

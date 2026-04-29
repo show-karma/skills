@@ -1,7 +1,7 @@
 ---
 name: find-funding-opportunities
 description: Search the Karma Funding Map for funding programs (grants, hackathons, bounties, accelerators, VC funds, RFPs) via the public API. Use when user says "find grants", "search hackathons", "look for bounties", "explore funding", "programs on Optimism", "what can I apply to", "funding opportunities", or asks about programs over or under a budget.
-version: 1.2.0
+version: 1.3.0
 tags: [programs, search, funding, discovery]
 metadata:
   author: Karma
@@ -15,6 +15,20 @@ Search the Karma Funding Map for funding programs via the public API.
 The registry has 6 program types: grants, hackathons, bounties, accelerators, VC funds, and RFPs. Use "programs" / "opportunities" / "funding" — not just "grants".
 
 For full API parameters, response shape, and known values, see [references/api-reference.md](references/api-reference.md).
+
+## When to use which surface
+
+This skill's primary surface is the rich `program-registry/search` REST endpoint — it filters by `type`, `ecosystems`, `minGrantSize`, `maxGrantSize`, `status`, `categories`, etc. **Do NOT replace it with MCP.**
+
+But if the user names a **specific program by title** (e.g. "what's ProPGF Batch 2?", "tell me about Filecoin & Karma Batch 1"), short-circuit to the MCP tool — it's a single hop and returns the canonical `programId`:
+
+```text
+Call karma_search_discover with { "query": "<program name>" }.
+```
+
+It returns `programs[]` alongside any matching projects/communities, with `programId` ready for chaining into `karma_program_get_details` or `karma_program_get_funding_summary`. See [../references/mcp-tools.md](../references/mcp-tools.md).
+
+For everything else (categories, ecosystems, budget filters, sorting), use the REST flow below.
 
 ## Content Safety
 
