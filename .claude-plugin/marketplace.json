@@ -5,54 +5,25 @@
     "url": "https://karmahq.xyz"
   },
   "metadata": {
-    "description": "Agent skills for the Karma ecosystem — manage projects, grants, milestones, and discover funding opportunities",
-    "version": "1.0.0"
+    "description": "Shared Karma agent skills for product chat, external agents, and MCP-capable runtimes",
+    "version": "3.0.0"
   },
   "plugins": [
     {
-      "name": "Find Funding Opportunities",
-      "description": "Search the Karma Funding Map for grants, hackathons, bounties, accelerators, VC funds, and RFPs",
-      "version": "1.2.0",
+      "name": "Karma Agent Skills",
+      "description": "Use Karma knowledge, project, program, review, and philanthropy workflows through a runtime-provided operation surface.",
+      "version": "3.0.0",
       "source": "./",
       "strict": false,
-      "tags": ["discovery", "funding", "grants"],
+      "tags": ["karma", "projects", "programs", "review", "philanthropy"],
       "skills": [
-        "./skills/find-funding-opportunities"
-      ]
-    },
-    {
-      "name": "Project Manager",
-      "description": "Create and manage projects, grants, milestones, and updates on the Karma protocol",
-      "version": "1.0.0",
-      "source": "./",
-      "strict": false,
-      "tags": ["agent", "projects", "grants", "attestations"],
-      "skills": [
-        "./skills/setup-agent",
-        "./skills/project-manager"
-      ]
-    },
-    {
-      "name": "Funding Program Manager",
-      "description": "Manage funding programs — reviewers, applications, milestones, payouts, grant agreements, and AI evaluation",
-      "version": "1.0.0",
-      "source": "./",
-      "strict": false,
-      "tags": ["program", "admin", "reviewer", "payout", "application"],
-      "skills": [
-        "./skills/setup-agent",
-        "./skills/funding-program-manager"
-      ]
-    },
-    {
-      "name": "Skill Creator",
-      "description": "Create new Claude Code skills for the Karma ecosystem",
-      "version": "0.1.0",
-      "source": "./",
-      "strict": false,
-      "tags": ["development", "skills"],
-      "skills": [
-        "./skills/skill-creator"
+        "./skills/knowledge-base-answering",
+        "./skills/karma-product-concepts",
+        "./skills/application-review",
+        "./skills/milestone-review",
+        "./skills/program-admin-workspace",
+        "./skills/project-owner-workspace",
+        "./skills/philanthropy-research"
       ]
     }
   ]

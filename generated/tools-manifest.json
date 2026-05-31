@@ -1,0 +1,27 @@
+{
+  "version": "mvp",
+  "tools": [
+    { "name": "search_knowledge_base", "kind": "read" },
+    { "name": "get_my_workspace", "kind": "read" },
+    { "name": "list_my_grants", "kind": "read" },
+    { "name": "get_project_details", "kind": "read" },
+    { "name": "get_project_status", "kind": "read" },
+    { "name": "list_project_milestones", "kind": "read" },
+    { "name": "list_assigned_applications", "kind": "read" },
+    { "name": "get_application_details", "kind": "read" },
+    { "name": "preview_add_application_comment", "kind": "preview" },
+    { "name": "commit_add_application_comment", "kind": "commit" },
+    { "name": "list_milestone_completions", "kind": "read" },
+    { "name": "list_pending_milestones", "kind": "read" },
+    { "name": "get_milestone_completion", "kind": "read" },
+    { "name": "list_program_applications", "kind": "read" },
+    { "name": "get_program_financials", "kind": "read" },
+    { "name": "preview_generate_portfolio_report", "kind": "preview" },
+    { "name": "commit_generate_portfolio_report", "kind": "commit" },
+    { "name": "search_organizations", "kind": "read" },
+    { "name": "search_grants", "kind": "read" },
+    { "name": "aggregate_grants", "kind": "read" },
+    { "name": "get_irs_990", "kind": "read" },
+    { "name": "run_sql", "kind": "read" }
+  ]
+}
