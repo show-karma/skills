@@ -22,6 +22,8 @@ When the user asks what a named reviewer needs to review, first resolve the revi
 
 For named-reviewer questions, never call `getPendingVerificationMilestones` without `reviewerAddress`. An unfiltered call returns the whole community queue, not that reviewer's queue. If `resolveReviewer` returns multiple possible people, use the reviewer address that appears in the community/program reviewer configuration when available; otherwise ask the user to choose.
 
+When the user asks for milestone counts scoped to a program, round, or batch (for example, "In batch 1, how many projects still have pending milestones?"), use `getProgramMilestoneSummary` with the user's program/batch phrase as `programQuery`. Do not list applications or projects one by one and sum them yourself.
+
 Use `getMilestoneReport` for broader milestone progress questions, such as total pending milestone counts by project/grant, past-due counts, or all milestone status for a reviewer. Do not use it as the primary source for "needs to review", "ready for review", or "awaiting review" questions unless the user asks for broader project-level progress rather than submitted completions.
 
 Return project names, grant titles, pending milestone counts, past-due counts, due dates, and links when the operation provides them.
