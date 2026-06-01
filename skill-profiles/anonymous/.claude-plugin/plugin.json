@@ -1,0 +1,12 @@
+{
+  "name": "karma-in-product-anonymous",
+  "description": "Anonymous-safe Karma skills for in-product chat",
+  "version": "0.1.0",
+  "author": {
+    "name": "Karma",
+    "url": "https://karmahq.xyz"
+  },
+  "repository": "https://github.com/show-karma/skills",
+  "license": "MIT",
+  "keywords": ["karma", "knowledge-base", "public-chat"]
+}

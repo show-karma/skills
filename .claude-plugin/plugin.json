@@ -1,13 +1,12 @@
 {
   "name": "karma",
-  "description": "Find funding opportunities, manage projects, grants, milestones, and updates on the Karma protocol",
-  "version": "2.1.0",
+  "description": "Shared Karma agent skills for product chat, external agents, and MCP-capable runtimes",
+  "version": "3.0.0",
   "author": {
     "name": "Karma",
     "url": "https://karmahq.xyz"
   },
   "repository": "https://github.com/show-karma/skills",
   "license": "MIT",
-  "keywords": ["grants", "funding", "projects", "milestones", "web3", "attestations"],
-  "hooks": "./hooks/hooks.json"
+  "keywords": ["karma", "grants", "funding", "projects", "milestones", "review", "philanthropy"]
 }

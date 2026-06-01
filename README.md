@@ -1,6 +1,8 @@
 # Karma Skills
 
-Agent skills for the Karma ecosystem — find funding opportunities, create and manage projects, administer funding programs, and post milestones and updates.
+Shared agent skills for the Karma ecosystem.
+
+These skills describe Karma workflows and operation names. They do not include API-key setup, curl examples, or raw endpoint instructions. The runtime is responsible for exposing the operations listed in each skill, whether through Karma's in-product MCP server or an external adapter.
 
 ## Quick Start
 
@@ -8,23 +10,21 @@ Agent skills for the Karma ecosystem — find funding opportunities, create and 
 npx skills add show-karma/skills
 ```
 
-Then ask your agent:
+Then ask your agent questions such as:
 
-> Create a project called "My DeFi App" on Optimism
+> How do I submit a milestone update for this program?
 
-> Find active grant programs on Ethereum
+> What applications do I need to review?
 
-> Post an update on my project — we shipped the MVP
+> Which projects have milestones ready for my review?
 
-> List reviewers for Optimism Audit Grants Season 8
+> What is happening across the programs I manage?
 
-> Show pending applications for my grant program
-
-> Add a reviewer to my program
+> What is the status of my project milestones?
 
 ## What Are Skills?
 
-Skills are reusable instruction sets that encode domain expertise into repeatable workflows. Each skill teaches an AI agent how to perform a specific task within the Karma ecosystem. Skills work with any compatible agent client, including Claude Code, Cursor, Windsurf, and others.
+Skills are reusable instruction sets that encode domain expertise into repeatable workflows. Each skill teaches an AI agent how to perform a specific task within the Karma ecosystem.
 
 The `SKILL.md` file contains YAML frontmatter (name, description, version, tags) followed by the instructions agents will follow.
 
@@ -32,33 +32,33 @@ The `SKILL.md` file contains YAML frontmatter (name, description, version, tags)
 
 | Skill | Description |
 |-------|-------------|
-| [`setup-agent`](skills/setup-agent/) | Register and get your API key — quick start (no account), email login, or manual. Saves key to shell config. |
-| [`project-manager`](skills/project-manager/) | Create and manage projects, grants, milestones, and updates on-chain. Handles all attestation actions in one skill. |
-| [`funding-program-manager`](skills/funding-program-manager/) | Administer a funding program — manage reviewers, applications, milestones, payouts, grant agreements, and AI evaluations. |
-| [`find-funding-opportunities`](skills/find-funding-opportunities/) | Search the Karma Funding Map for grants, hackathons, bounties, accelerators, VC funds, and RFPs. |
-
-All on-chain skills use the Karma Agent API with a server-side wallet. No gas fees, no browser wallet needed.
+| Skill | Description |
+|-------|-------------|
+| [`knowledge-base-answering`](skills/knowledge-base-answering/) | Answer community and program process questions from indexed knowledge-base content. |
+| [`karma-product-concepts`](skills/karma-product-concepts/) | Explain Karma roles, entities, and routing between entity data and knowledge-base content. |
+| [`application-review`](skills/application-review/) | Help application reviewers find assigned applications and review state. |
+| [`milestone-review`](skills/milestone-review/) | Help milestone reviewers find projects and milestones ready for review. |
+| [`program-admin-workspace`](skills/program-admin-workspace/) | Help admins inspect programs, applications, reviewers, milestones, payouts, and reports. |
+| [`project-owner-workspace`](skills/project-owner-workspace/) | Help project owners inspect projects, grants, milestones, completions, updates, indicators, invoices, and payouts. |
+| [`philanthropy-research`](skills/philanthropy-research/) | Research grantmakers, nonprofits, grant transactions, totals, filings, and prospect-fit evidence. |
 
 ## How It Works
 
 ```
-You
+User request
   ↓
-AI Agent (picks the right skill)
+AI agent selects a Karma skill
   ↓
-Karma API (encodes attestation)
+Skill names the workflow and expected operations
   ↓
-Server Wallet (signs + submits tx, gasless)
+Runtime adapter exposes operations through MCP or another interface
   ↓
-Blockchain (EAS attestation created)
-  ↓
-karmahq.xyz (visible on the web)
+Karma services enforce auth, RBAC, budgets, and tool policy
 ```
 
-- **No gas fees** — transactions are sponsored via account abstraction
-- **No browser wallet** — your agent gets a server-side wallet
-- **On-chain** — every action creates a verifiable [EAS attestation](https://docs.attest.sh/)
-- **Client-agnostic** — works with any AI agent that supports the Skills Standard
+- **Skills are transport-neutral** — no raw endpoint or API-key setup instructions.
+- **Runtime enforcement stays in code** — skills guide behavior but do not grant permissions.
+- **Client-agnostic** — compatible agents can install the same skill files.
 
 ## Skill Format
 
@@ -70,6 +70,8 @@ skills/my-skill/
 ├── references/       # Reference documents (optional)
 └── assets/           # Templates, scripts (optional)
 ```
+
+Karma-specific frontmatter may include `operations`, a list of runtime operation names the skill expects.
 
 ## Karma Ecosystem
 
