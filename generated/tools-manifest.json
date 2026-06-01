@@ -1,7 +1,10 @@
 {
   "version": "mvp",
-  "tools": [
-    { "name": "search_knowledge_base", "kind": "read" },
+  "operations": [
+    { "name": "searchKnowledgeBase", "kind": "read" },
+    { "name": "resolveReviewer", "kind": "read" },
+    { "name": "getMilestoneReport", "kind": "read" },
+    { "name": "getPendingVerificationMilestones", "kind": "read" },
     { "name": "get_my_workspace", "kind": "read" },
     { "name": "list_my_grants", "kind": "read" },
     { "name": "get_project_details", "kind": "read" },
@@ -12,7 +15,6 @@
     { "name": "preview_add_application_comment", "kind": "preview" },
     { "name": "commit_add_application_comment", "kind": "commit" },
     { "name": "list_milestone_completions", "kind": "read" },
-    { "name": "list_pending_milestones", "kind": "read" },
     { "name": "get_milestone_completion", "kind": "read" },
     { "name": "list_program_applications", "kind": "read" },
     { "name": "get_program_financials", "kind": "read" },

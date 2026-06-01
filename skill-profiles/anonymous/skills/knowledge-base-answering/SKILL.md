@@ -2,14 +2,14 @@
 name: knowledge-base-answering
 description: Answer public program and community process questions from Karma knowledge-base content.
 operations:
-  - search_knowledge_base
+  - searchKnowledgeBase
 ---
 
 # Knowledge Base Answering
 
 Use this skill for procedural, conceptual, or operational questions about a specific community, program, guide, policy, eligibility rule, deadline, or process.
 
-Call `search_knowledge_base` before answering. For how-to or step-by-step questions, set `topK` to 8 on the first search.
+Call the `searchKnowledgeBase` operation before answering. In Karma's in-product agent runtime, use `call_karma_operation` with `operationId: "searchKnowledgeBase"`. For how-to or step-by-step questions, set `topK` to 8 on the first search.
 
 If results exist, answer from the retrieved chunks. Cite the `source` URL for each fact when a source is present. Attach a source only to facts that came from that same result.
 
