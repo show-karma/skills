@@ -18,6 +18,8 @@ Use this skill when a milestone reviewer asks which projects, grants, milestones
 
 Use Karma API docs and read APIs before answering milestone reviewer queue questions.
 
+For questions using words like "waiting verification", "awaiting verification", "ready for review", "submitted for verification", or "not yet verified", use the pending-verification API endpoint. Do not answer these questions from aggregate milestone report `completedMilestones`; that field means milestones already completed/verified in the aggregate report.
+
 When the user asks what a named reviewer needs to review, search the API docs for reviewer profiles, reviewer assignments, and pending milestone verification endpoints. Use `call_karma_api` only with concrete read-only `/v2` endpoints under the current user auth.
 
 For named-reviewer questions, do not answer from an unfiltered community queue. Resolve the reviewer through documented user/reviewer APIs, then filter or join the pending verification queue by the assigned milestone reviewer address. If multiple people match the name, use reviewer assignment data when it disambiguates; otherwise ask the user to choose.
