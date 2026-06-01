@@ -11,6 +11,10 @@ Use this skill for procedural, conceptual, or operational questions about a spec
 
 Call the `searchKnowledgeBase` operation before answering. In Karma's in-product agent runtime, use `call_karma_operation` with `operationId: "searchKnowledgeBase"`. For how-to or step-by-step questions, set `topK` to 8 on the first search.
 
+Do not ask which program the user means before the first search. If the current page or runtime context provides a community, search that community first with no program filter unless the user named a program.
+
+Do not use process-guide tools before `searchKnowledgeBase` for community process, policy, SLA, eligibility, or payment-timeline questions.
+
 If results exist, answer from the retrieved chunks. Cite the `source` URL for each fact when a source is present. Attach a source only to facts that came from that same result.
 
 If no results exist, say the topic is not covered in the community knowledge base. Do not answer from general knowledge for community-specific process questions.
