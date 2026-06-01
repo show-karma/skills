@@ -2,11 +2,10 @@
 name: milestone-review
 description: Help milestone reviewers find projects and milestones ready for review.
 operations:
+  - search_karma_api_docs
+  - get_karma_api_operation
+  - call_karma_api
   - get_my_workspace
-  - resolveReviewer
-  - getMilestoneReport
-  - getProgramMilestoneSummary
-  - getPendingVerificationMilestones
   - list_milestone_completions
   - get_milestone_completion
   - get_project_details
@@ -17,15 +16,15 @@ operations:
 
 Use this skill when a milestone reviewer asks which projects, grants, milestones, or completions are ready for their review.
 
-Use milestone review operations before answering milestone reviewer queue questions.
+Use Karma API docs and read APIs before answering milestone reviewer queue questions.
 
-When the user asks what a named reviewer needs to review, first resolve the reviewer with `resolveReviewer`, then call `getPendingVerificationMilestones` filtered by that reviewer's `reviewerAddress`. In Karma's in-product agent runtime, call these through `call_karma_operation`.
+When the user asks what a named reviewer needs to review, search the API docs for reviewer profiles, reviewer assignments, and pending milestone verification endpoints. Use `call_karma_api` only with concrete read-only `/v2` endpoints under the current user auth.
 
-For named-reviewer questions, never call `getPendingVerificationMilestones` without `reviewerAddress`. An unfiltered call returns the whole community queue, not that reviewer's queue. If `resolveReviewer` returns multiple possible people, use the reviewer address that appears in the community/program reviewer configuration when available; otherwise ask the user to choose.
+For named-reviewer questions, do not answer from an unfiltered community queue. Resolve the reviewer through documented user/reviewer APIs, then filter or join the pending verification queue by the assigned milestone reviewer address. If multiple people match the name, use reviewer assignment data when it disambiguates; otherwise ask the user to choose.
 
-When the user asks for milestone counts scoped to a program, round, or batch (for example, "In batch 1, how many projects still have pending milestones?"), use `getProgramMilestoneSummary` with the user's program/batch phrase as `programQuery`. This follows the same pending-milestone semantics as the community updates page. Do not list applications or projects one by one and sum them yourself.
+When the user asks for milestone counts scoped to a program, round, or batch (for example, "In batch 1, how many projects still have pending milestones?"), search the API docs for the same endpoint the frontend page uses, then call that API with the program filter. Do not list applications or projects one by one and sum them yourself when a frontend-backed endpoint already returns the answer.
 
-Use `getMilestoneReport` for broader milestone progress questions, such as total pending milestone counts by project/grant, past-due counts, or all milestone status for a reviewer. Do not use it as the primary source for "needs to review", "ready for review", or "awaiting review" questions unless the user asks for broader project-level progress rather than submitted completions.
+Use documented milestone report, project update, funding application, and reviewer APIs for broader milestone progress questions, such as total pending milestone counts by project/grant, past-due counts, reviewer assignments, or submitted completions awaiting verification.
 
 Return project names, grant titles, pending milestone counts, past-due counts, due dates, and links when the operation provides them.
 
