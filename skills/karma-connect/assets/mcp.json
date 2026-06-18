@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "karma": {
+      "type": "http",
+      "url": "https://gapapi.karmahq.xyz/mcp"
+    }
+  }
+}

@@ -2,7 +2,7 @@
 
 Shared agent skills for the Karma ecosystem.
 
-These skills describe Karma workflows and operation names. They do not include API-key setup, curl examples, or raw endpoint instructions. The runtime is responsible for exposing the operations listed in each skill, whether through Karma's in-product MCP server or an external adapter.
+These skills describe Karma workflows and reach data through Karma's MCP server. Inside Karma's in-product chat the MCP tools are provided automatically. For an external agent (Claude Code, Cursor, and similar), installing this plugin also registers the Karma MCP server (bundled `.mcp.json`) — you sign in through your browser, no API key to copy. See the **Connecting to Karma** section below. The domain skills themselves stay transport-neutral: they describe the workflow and let the API tools resolve the concrete endpoints.
 
 ## Quick Start
 
@@ -22,6 +22,29 @@ Then ask your agent questions such as:
 
 > What is the status of my project milestones?
 
+## Connecting to Karma
+
+Inside Karma's in-product chat, the MCP tools are already available — no setup needed.
+
+For an external agent, this plugin bundles the Karma MCP server (`.mcp.json` at the plugin root), so installing the plugin registers it automatically. Authentication is browser-based sign-in — no API key to copy:
+
+1. Install the plugin.
+2. Connect the server (in Claude Code, run `/mcp` and pick **karma**). The agent gives you a Karma sign-in URL.
+3. Open the URL, log in to Karma, and approve access. That's it — the agent now acts as you.
+
+Details:
+
+- Endpoint: `https://gapapi.karmahq.xyz/mcp` (production). For staging, point at `https://gapstagapi.karmahq.xyz/mcp`.
+- Auth: OAuth 2.1 (authorization-code + PKCE). The token is scoped to your Karma identity and managed by your MCP client.
+- The surface is read-only (GET): it can find and read records, not post comments, submit reviews, generate reports, or move payouts — those happen in the Karma product UI.
+
+For non-interactive use (CI, headless `-p`), browser sign-in isn't possible — use an API key instead via an `x-api-key` header (get a key at https://www.karmahq.xyz/mcp/connect):
+
+```bash
+claude mcp add --transport http karma https://gapapi.karmahq.xyz/mcp \
+  --header "x-api-key: $KARMA_API_KEY"
+```
+
 ## What Are Skills?
 
 Skills are reusable instruction sets that encode domain expertise into repeatable workflows. Each skill teaches an AI agent how to perform a specific task within the Karma ecosystem.
@@ -30,8 +53,6 @@ The `SKILL.md` file contains YAML frontmatter (name, description, version, tags)
 
 ## Available Skills
 
-| Skill | Description |
-|-------|-------------|
 | Skill | Description |
 |-------|-------------|
 | [`knowledge-base-answering`](skills/knowledge-base-answering/) | Answer community and program process questions from indexed knowledge-base content. |

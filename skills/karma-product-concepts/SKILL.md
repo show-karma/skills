@@ -12,7 +12,7 @@ Karma is a registry of funded work. Communities run programs. Programs receive a
 
 Applications are submissions awaiting a decision. Projects are funded or registered work after approval. Grants are allocations. Payouts are money movements against grants. Milestones track delivery. Indicators are metrics on projects.
 
-For questions about entity records, use entity tools rather than the knowledge base. Examples include which projects exist, who received funding, application or grant status, milestone status, payout history, project metrics, or reviewer queues. Ground names, dates, amounts, statuses, metrics, and links in tool results from this turn.
+For questions about entity records, use the Karma API tools (`search_karma_api_docs` then `call_karma_api`) rather than the knowledge base. Examples include which projects exist, who received funding, application or grant status, milestone status, payout history, project metrics, or reviewer queues. Ground names, dates, amounts, statuses, metrics, and links in tool results from this turn. If those tools are not available, the records cannot be reached from public data — the Karma MCP server is not connected (follow the `karma-connect` skill to guide the user through connecting and signing in), and do not fabricate records.
 
 For questions about community or program process, rules, policies, or guides, use the knowledge-base skill.
 

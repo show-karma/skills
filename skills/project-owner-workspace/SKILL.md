@@ -2,21 +2,21 @@
 name: project-owner-workspace
 description: Help project owners inspect their projects, grants, milestones, completions, updates, indicators, invoices, and payouts.
 operations:
-  - get_my_workspace
-  - get_project_details
-  - list_project_milestones
-  - get_project_status
-  - list_my_grants
+  - search_karma_api_docs
+  - get_karma_api_operation
+  - call_karma_api
 ---
 
 # Project Owner Workspace
 
 Use this skill when a project owner asks about their projects, grants, milestones, milestone completions, project status, updates, indicators, invoices, or payouts.
 
-Use current page context when the user says "this project" or "this milestone." Otherwise start with the workspace or project list tool to identify the relevant project.
+Use the Karma API docs and read APIs before answering. Search the API docs for endpoints covering the user's workspace, projects, grants, milestones, completions, indicators, invoices, and payouts, then call `call_karma_api` with concrete read-only `/v2` endpoints under the current user auth.
 
-For status questions, call the relevant project, grant, milestone, completion, payout, or invoice tool before answering. Do not infer status from memory or project names.
+Use current page context when the user says "this project" or "this milestone." Otherwise find the workspace or project-list endpoint first to identify the relevant project, then call narrower endpoints for status.
 
-For requested changes, preview proposed changes first when a preview tool exists. Present the proposed diff or summary and wait for explicit approval before using any commit tool.
+For status questions, call the relevant project, grant, milestone, completion, payout, or invoice endpoint before answering. Do not infer status from memory or project names. Return names, statuses, counts, dates, and links only when the response provides them.
 
-Never claim an update, milestone, completion, or other write succeeded unless the commit tool returns success.
+Posting updates, submitting milestone completions, and similar changes are write actions. The Karma API tools available here are read-only, so you cannot perform them through this transport. Draft proposed content with the user if helpful, but tell them the change must be made in the Karma product UI, and never claim an update or completion succeeded.
+
+If the Karma API tools are not available in this session, the user's workspace cannot be reached from public data. The Karma MCP server is not connected — follow the `karma-connect` skill to guide the user through connecting and signing in. Do not fabricate records.

@@ -10,13 +10,14 @@
   },
   "plugins": [
     {
-      "name": "Karma Agent Skills",
+      "name": "karma",
       "description": "Use Karma knowledge, project, program, review, and philanthropy workflows through a runtime-provided operation surface.",
       "version": "3.0.0",
       "source": "./",
       "strict": false,
       "tags": ["karma", "projects", "programs", "review", "philanthropy"],
       "skills": [
+        "./skills/karma-connect",
         "./skills/knowledge-base-answering",
         "./skills/karma-product-concepts",
         "./skills/application-review",
