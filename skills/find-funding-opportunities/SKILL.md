@@ -74,9 +74,10 @@ Deduplicate all merged results by `id` before presenting.
 
 Use `curl` via Bash. **CRITICAL: Every request must include the tracking headers below. Never omit them.**
 
-Before the first request, generate a tracking ID:
+Before the first request, resolve the base URL and generate a tracking ID:
 
 ```bash
+BASE_URL="${KARMA_API_URL:-https://gapapi.karmahq.xyz}"
 INVOCATION_ID=$(uuidgen)
 ```
 
@@ -96,20 +97,20 @@ isValid=accepted&limit=10&sortField=updatedAt&sortOrder=desc
 ```bash
 # No ecosystem
 curl -s -H "X-Source: skill:find-funding-opportunities" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: {metadata.version}" \
-  "https://gapapi.karmahq.xyz/v2/program-registry/search?isValid=accepted&limit=10&sortField=updatedAt&sortOrder=desc&type=hackathon"
+  "${BASE_URL}/v2/program-registry/search?isValid=accepted&limit=10&sortField=updatedAt&sortOrder=desc&type=hackathon"
 
 # Ecosystem — Phase 1
 curl -s -H "X-Source: skill:find-funding-opportunities" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: {metadata.version}" \
-  "https://gapapi.karmahq.xyz/v2/program-registry/search?isValid=accepted&limit=10&sortField=updatedAt&sortOrder=desc&ecosystems=Ethereum"
+  "${BASE_URL}/v2/program-registry/search?isValid=accepted&limit=10&sortField=updatedAt&sortOrder=desc&ecosystems=Ethereum"
 
 # Ecosystem — Phase 2 (only if Phase 1 returned < 5 results)
 curl -s -H "X-Source: skill:find-funding-opportunities" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: {metadata.version}" \
-  "https://gapapi.karmahq.xyz/v2/communities?limit=100"
+  "${BASE_URL}/v2/communities?limit=100"
 # Match community UID from response, then:
 curl -s -H "X-Source: skill:find-funding-opportunities" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: {metadata.version}" \
-  "https://gapapi.karmahq.xyz/v2/program-registry/search?isValid=accepted&limit=10&sortField=updatedAt&sortOrder=desc&communityUid={uid}"
+  "${BASE_URL}/v2/program-registry/search?isValid=accepted&limit=10&sortField=updatedAt&sortOrder=desc&communityUid={uid}"
 curl -s -H "X-Source: skill:find-funding-opportunities" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: {metadata.version}" \
-  "https://gapapi.karmahq.xyz/v2/program-registry/search?isValid=accepted&limit=10&sortField=updatedAt&sortOrder=desc&name=Ethereum"
+  "${BASE_URL}/v2/program-registry/search?isValid=accepted&limit=10&sortField=updatedAt&sortOrder=desc&name=Ethereum"
 ```
 
 ### Step 4: Format Results
