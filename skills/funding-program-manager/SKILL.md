@@ -757,7 +757,7 @@ curl -s "${BASE_URL}/v2/milestone-invoices/grant/${GRANT_UID}" \
 
 Per-milestone invoice status (`not_submitted`, `received`, ...), payment status, and amounts. Related reads: `GET /v2/milestone-invoices/${GRANT_UID}/invoice-requirement` and `GET /v2/milestone-invoices/${REFERENCE_NUMBER}/invoice-config`.
 
-**Invoice processing time**: compute it as `invoiceReceivedAt` -> the payout's `paymentStatusDate` (from the community payouts / milestone report data). `invoiceSentAt` is a different lifecycle field and is often null — do not use it for processing-time questions.
+**Invoice processing time**: for paid invoices, compute `invoiceReceivedAt` -> the payout's `paymentStatusDate`; for invoices still unpaid, compute `invoiceReceivedAt` -> now (outstanding age), and label them as unpaid rather than processed. `invoiceSentAt` is a different lifecycle field and is often null — do not use it for processing-time questions.
 
 ---
 
@@ -865,7 +865,8 @@ curl -s -X POST "${BASE_URL}/v2/applications/${REFERENCE_NUMBER}/comments" \
 | "request revision" | Update status to `revision_requested` |
 | "which programs do I manage", "my programs" | Discover your programs (admin communities -> community programs) |
 | "program financials", "budget vs committed", "how much committed" | Get program financials |
-| "milestone completions", "show milestones" | List the project's grant milestones (via grants) |
+| "milestone completions", "show milestones", "grant milestones" | List the project's grant milestones (via grants) |
+| "project roadmap milestones" | `GET /v2/projects/{id}/milestones` (roadmap, not grant deliverables) |
 | "pending milestones", "waiting verification", "unverified milestones" | Community pending-verification list |
 | "milestone report", "completion stats" | Community milestone report |
 | "was this milestone evaluated" | Get milestone evaluation |
