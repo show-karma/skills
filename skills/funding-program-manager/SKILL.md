@@ -1,7 +1,7 @@
 ---
 name: funding-program-manager
-description: Create and manage funding programs on Karma — create programs in the registry, configure intake forms, apply to programs, manage reviewers, applications, milestones, payouts, grant agreements, and AI evaluation. Use when user says "create a program", "new funding program", "set up grants program", "configure intake form", "add form fields", "apply to program", "submit application", "apply for grant", "manage program", "list reviewers", "add reviewer", "remove reviewer", "review applications", "approve application", "reject application", "application status", "list applications", "milestone completions", "pending milestones", "create payout", "disbursement", "payout history", "grant agreement", "sign agreement", "evaluate application", "AI score", "application comment", "enable applications", "update program", or any funding program administration action.
-version: 1.1.0
+description: Create and manage funding programs on Karma — create programs in the registry, configure intake forms, apply to programs, manage reviewers, applications, milestones, payouts, grant agreements, and AI evaluation. Use when user says "create a program", "new funding program", "set up grants program", "configure intake form", "add form fields", "apply to program", "submit application", "apply for grant", "manage program", "list reviewers", "add reviewer", "remove reviewer", "review applications", "approve application", "reject application", "application status", "list applications", "milestone completions", "pending milestones", "create payout", "disbursement", "payout history", "grant agreement", "sign agreement", "evaluate application", "AI score", "application comment", "enable applications", "update program", "my programs", "which programs do I manage", "program financials", "project milestones", "waiting verification", "milestone report", "project updates", "milestone invoices", "unpaid invoices", or any funding program administration action.
+version: 1.2.0
 tags: [program, reviewer, application, milestone, payout, agreement, evaluation, admin]
 metadata:
   author: Karma
@@ -248,7 +248,30 @@ Each field in `formSchema.fields`:
 ```bash
 curl -s "${BASE_URL}/v2/funding-program-configs/${PROGRAM_ID}" \
   -H "x-api-key: ${API_KEY}" \
-  -H "X-Source: skill:funding-program-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 1.0.0"
+  -H "X-Source: skill:funding-program-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 1.2.0"
+```
+
+**Important**: read `isEnabled` from `applicationConfig.isEnabled` — the root-level field comes back `null`.
+
+### Discover Your Programs
+
+Answers "which programs do I manage?". Two steps: list the communities where your key is admin, then list each community's programs.
+
+```bash
+curl -s "${BASE_URL}/v2/user/communities/admin" \
+  -H "x-api-key: ${API_KEY}" \
+  -H "X-Source: skill:funding-program-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 1.2.0"
+```
+
+Then for each community UID returned, call **List Community Programs** below.
+
+### Get Program Financials
+
+Budget, committed (allocated) and disbursed totals in one call. Returns 404 for programs with no funding setup (e.g. form-only registry entries).
+
+```bash
+curl -s "${BASE_URL}/v2/programs/${PROGRAM_ID}/financials" \
+  -H "X-Source: skill:funding-program-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 1.2.0"
 ```
 
 ### List Community Programs
@@ -326,6 +349,8 @@ Query params (all optional):
 | `sortOrder` | `asc`, `desc` |
 | `page` | Page number (default: 1) |
 | `limit` | Items per page (default: 20, max: 100) |
+
+The response payload is `{ applications: [...], pagination: {...} }` — read the `applications` key.
 
 ### Get Application Details
 
@@ -552,9 +577,12 @@ curl -s -X DELETE "${BASE_URL}/v2/funding-program-configs/${PROGRAM_ID}/reviewer
 
 ### List Milestone Reviewers
 
+Requires authentication.
+
 ```bash
 curl -s "${BASE_URL}/v2/programs/${PROGRAM_ID}/milestone-reviewers" \
-  -H "X-Source: skill:funding-program-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 1.0.0"
+  -H "x-api-key: ${API_KEY}" \
+  -H "X-Source: skill:funding-program-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 1.2.0"
 ```
 
 ### Add Milestone Reviewer
@@ -602,17 +630,59 @@ Both arrays are optional — provide at least one. Addresses must be valid Ether
 
 ---
 
-## 8. Milestone Completions
+## 8. Milestones
 
-### List Milestone Completions for an Application
+### List a Project's Grant Milestones
+
+Grant milestones (the funded deliverables with completion/verification state) live on the project's **grants**, not on the project itself:
 
 ```bash
-curl -s "${BASE_URL}/v2/funding-applications/${REFERENCE_NUMBER}/milestone-completions" \
-  -H "x-api-key: ${API_KEY}" \
-  -H "X-Source: skill:funding-program-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 1.0.0"
+curl -s "${BASE_URL}/v2/projects/${PROJECT_UID_OR_SLUG}/grants" \
+  -H "X-Source: skill:funding-program-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 1.2.0"
 ```
 
-Returns completions with `isVerified`, `verifiedBy`, `verifiedAt`, and `verificationComment` fields.
+Each grant carries `milestones[]` with `uid`, `title`, `endsAt`, `currentStatus` (e.g. verified / completed / pending), and `statusHistory`. Use this for "show milestones" and "which milestone completions were submitted" — completed-but-unverified entries are the submitted completions awaiting review.
+
+`GET /v2/projects/${PROJECT_UID_OR_SLUG}/milestones` also exists but returns the project's own roadmap milestones (often empty for grantees) — not the grant deliverables.
+
+### Milestones Waiting Verification (Community-Wide)
+
+```bash
+curl -s "${BASE_URL}/v2/communities/${COMMUNITY_UID_OR_SLUG}/milestones/pending-verification?page=1&limit=20" \
+  -H "x-api-key: ${API_KEY}" \
+  -H "X-Source: skill:funding-program-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 1.2.0"
+```
+
+Each row carries `milestoneUid`, `milestoneTitle`, `grantUid`, `grantTitle`, `programId`, `projectUid`, `projectTitle`, `completedAt`.
+
+### Milestone Completion Report (Community-Wide)
+
+```bash
+curl -s "${BASE_URL}/v2/communities/${COMMUNITY_UID_OR_SLUG}/milestones/report" \
+  -H "X-Source: skill:funding-program-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 1.2.0"
+```
+
+Aggregate stats (total/completed/pending milestones, invoice and payment counts) plus per-grant rows. This counts completion status — for "waiting verification" questions use the pending-verification endpoint above.
+
+### Get Milestone Evaluation
+
+```bash
+curl -s "${BASE_URL}/v2/milestones/${MILESTONE_UID}/evaluation" \
+  -H "X-Source: skill:funding-program-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 1.2.0"
+```
+
+---
+
+## 8b. Project Updates
+
+### List a Project's Updates
+
+```bash
+curl -s "${BASE_URL}/v2/projects/${PROJECT_UID_OR_SLUG}/updates" \
+  -H "X-Source: skill:funding-program-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 1.2.0"
+```
+
+For "which grantees haven't posted updates" questions, iterate the community's projects and check each one's latest update date.
 
 ---
 
@@ -674,8 +744,20 @@ curl -s "${BASE_URL}/v2/payouts/community/${COMMUNITY_UID}/pending?page=1&limit=
 ```bash
 curl -s "${BASE_URL}/v2/payouts/safe/${SAFE_ADDRESS}/awaiting?page=1&limit=20" \
   -H "x-api-key: ${API_KEY}" \
-  -H "X-Source: skill:funding-program-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 1.0.0"
+  -H "X-Source: skill:funding-program-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 1.2.0"
 ```
+
+### Milestone Invoices for a Grant
+
+```bash
+curl -s "${BASE_URL}/v2/milestone-invoices/grant/${GRANT_UID}" \
+  -H "x-api-key: ${API_KEY}" \
+  -H "X-Source: skill:funding-program-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 1.2.0"
+```
+
+Per-milestone invoice status (`not_submitted`, `received`, ...), payment status, and amounts. Related reads: `GET /v2/milestone-invoices/${GRANT_UID}/invoice-requirement` and `GET /v2/milestone-invoices/${REFERENCE_NUMBER}/invoice-config`.
+
+**Invoice processing time**: for paid invoices, compute `invoiceReceivedAt` -> the payout's `paymentStatusDate`; for invoices still unpaid, compute `invoiceReceivedAt` -> now (outstanding age), and label them as unpaid rather than processed. `invoiceSentAt` is a different lifecycle field and is often null — do not use it for processing-time questions.
 
 ---
 
@@ -781,8 +863,16 @@ curl -s -X POST "${BASE_URL}/v2/applications/${REFERENCE_NUMBER}/comments" \
 | "approve application" | Update status to `approved` (requires amount + currency) |
 | "reject application" | Update status to `rejected` |
 | "request revision" | Update status to `revision_requested` |
-| "milestone completions", "show milestones" | List milestone completions |
-| "pending milestones", "unverified milestones" | List milestone completions, filter by `isVerified: false` |
+| "which programs do I manage", "my programs" | Discover your programs (admin communities -> community programs) |
+| "program financials", "budget vs committed", "how much committed" | Get program financials |
+| "milestone completions", "show milestones", "grant milestones" | List the project's grant milestones (via grants) |
+| "project roadmap milestones" | `GET /v2/projects/{id}/milestones` (roadmap, not grant deliverables) |
+| "pending milestones", "waiting verification", "unverified milestones" | Community pending-verification list |
+| "milestone report", "completion stats" | Community milestone report |
+| "was this milestone evaluated" | Get milestone evaluation |
+| "project updates", "latest updates" | List the project's updates |
+| "milestone invoices", "unpaid invoices" | Milestone invoices for grant |
+| "invoice processing time", "invoices over N days" | Invoices received date vs payment date (see section 9) |
 | "create payout", "record disbursement" | Create disbursement record |
 | "payout history" | Get payout history for grant |
 | "total disbursed", "how much paid" | Get total disbursed |
