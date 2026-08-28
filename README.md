@@ -52,7 +52,7 @@ Server Wallet (signs + submits tx, gasless)
   ↓
 Blockchain (EAS attestation created)
   ↓
-karmahq.xyz (visible on the web)
+karmahq.org (visible on the web)
 ```
 
 - **No gas fees** — transactions are sponsored via account abstraction
@@ -73,7 +73,7 @@ skills/my-skill/
 
 ## Karma Ecosystem
 
-[Karma](https://www.karmahq.xyz) helps projects build reputation and find funding opportunities. Karma's grants platform can be used by organizations to run their grant program (application intake, funds disbursal, milestone and metrics tracking). Key areas:
+[Karma](https://www.karmahq.org) helps projects build reputation and find funding opportunities. Karma's grants platform can be used by organizations to run their grant program (application intake, funds disbursal, milestone and metrics tracking). Key areas:
 
 - **Project Profile** — Share progress updates, show traction and get funding
 - **Funding Map** — Discover funding opportunities for your project
