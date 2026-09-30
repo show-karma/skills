@@ -54,6 +54,17 @@
       "skills": [
         "./skills/skill-creator"
       ]
+    },
+    {
+      "name": "Simocracy Milestone Evaluations",
+      "description": "Let a program's Simocracy Sims evaluate an application's delivered milestones and record each Sim's verdict in the application's Integrations tab",
+      "version": "0.4.0",
+      "source": "./",
+      "strict": false,
+      "tags": ["simocracy", "sim", "milestone", "evaluation", "reviewer"],
+      "skills": [
+        "./skills/simocracy-milestone-evaluations"
+      ]
     }
   ]
 }
