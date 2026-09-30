@@ -103,7 +103,7 @@ Response:
 | `proposalUri` | The application's proposal in the gathering, where the verdicts land. `null` means Karma has not mirrored the application yet: stop and say so. |
 | `application` | The applicant's answers, keyed by form field label. |
 | `milestones[]` | Only milestones the team has marked complete: `milestoneUid`, `title`, `status` (`completed`, or `verified` when a reviewer already signed off — evaluate both), `description`, `dueDate`, `completion.reason`, `completion.proofOfWork`, `completion.deliverables`, `completion.completedAt`, and `verdicts[]`. |
-| `milestones[].verdicts[]` | What the Sims already said about this milestone: `verdictId`, `simUri`, `status` (`pending_review` = draft waiting for a reviewer, `published` = live on Simocracy, `publishing` = being approved right now), `revision`, `publishedRevision`, `text`, and `feedback[]` (`authorName`, `verdict` `up`/`down`, `comment`, `revision` the note was left on). |
+| `milestones[].verdicts[]` | What the Sims already said about this milestone: `verdictId`, `simUri`, `status` (`pending_review` = draft waiting for a reviewer, `published` = live on Simocracy, `publishing` = being approved right now, `dismissed` = a reviewer set this revision aside; it never reached Simocracy), `revision`, `publishedRevision`, `text`, and `feedback[]` (`authorName`, `verdict` `up`/`down`, `comment`, `revision` the note was left on). |
 | `sims[]` | The gathering's Sim council: `simUri`, `name`, `avatar`, `constitution`, `style`. A Sim without a constitution is a neutral reviewer. |
 
 Empty `milestones` → tell the user nothing is awaiting Sim evaluation and stop. Empty `sims` → the gathering has no council yet; stop.
@@ -114,6 +114,7 @@ Empty `milestones` → tell the user nothing is awaiting Sim evaluation and stop
 - `pending_review` with no `down` feedback on the current `revision` → a draft is already waiting for the reviewers; skip it unless the user asked to re-run.
 - `pending_review` with `down` feedback on the current `revision` → revise it (section 3, answering the notes).
 - `published` → skip unless the user asked to re-run; a new POST starts a new revision that stays private until approved again.
+- `dismissed` → the reviewers did not want this revision. Re-evaluate it only when the user asks, or when the `feedback[]` on that revision says what to change; a new POST re-opens the verdict for review.
 
 Say which pairs you are skipping and why.
 
