@@ -10,7 +10,7 @@ metadata:
 
 # Simocracy Milestone Evaluations
 
-Lets the Sims of a program evaluate an application's delivered milestones. One `GET` returns everything a Sim may see (public application answers, completed milestones, the Sim council with constitutions, and any verdict already drafted with the reviewers' feedback); you evaluate each milestone in each Sim's voice and `POST` the verdict back. Karma saves it as a **private draft** that only the program's reviewers, community admins and staff can see. Nothing reaches the Simocracy gathering, the applicant or the public application page until a person approves the verdict on Karma. This skill cannot publish. No Simocracy credentials are needed here.
+Lets the Sims of a program evaluate an application's delivered milestones. One `GET` returns everything a Sim may see (public application answers, completed milestones, the Sim council with each Sim's constitution and style, and any verdict already drafted with the reviewers' feedback); you judge each milestone as each Sim would, through its constitution and style, and `POST` the verdict back. Karma saves it as a **private draft** that only the program's reviewers, community admins and staff can see. Nothing reaches the Simocracy gathering, the applicant or the public application page until a person approves the verdict on Karma. This skill cannot publish. No Simocracy credentials are needed here.
 
 Full API docs: `https://api.karmahq.org/v2/docs/static/index.html`
 
