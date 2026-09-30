@@ -135,7 +135,7 @@ Specific over general: name the repo, the commit date, the URL that did or did n
 
 **Revising after feedback.** When a pair has `down` feedback on its current revision, read every note, re-check the evidence the note points at, and write the new judgement so it answers each note in the Sim's own voice — agreeing and changing the verdict when the note is right, or explaining what was checked when it is not. Quote nothing from the note verbatim; address its substance.
 
-Order the work as reviewers read it: milestones by `dueDate` (then title), Sims alphabetically within each milestone. Show the user the full set before saving. Because drafts are private and cheap to replace, do not wait for a confirmation on a single application; for a whole program (section 5) ask once.
+Order the work as reviewers read it: milestones by `dueDate` (then title), Sims alphabetically within each milestone. Show the user the full set and **ask whether to save it as drafts on Karma** before calling section 4. The user may want to tweak a Sim's constitution, re-run, or compare outputs first; nothing is saved until they say so. For a whole program (section 5) ask once for the whole batch.
 
 ## 4. Save each verdict on Karma
 
@@ -183,7 +183,7 @@ Use only `applications[].referenceNumber` from the listing (follow `pagination.t
 | "evaluate APP-XXXX's milestones with the Sims" | Sections 2–4 |
 | "evaluate IPNI's milestones in Batch 3" | Section 1 (program by name, then project by name), then 2–4 |
 | "which milestones of <project> are ready for Sim evaluation" | Sections 1–2 only; list `milestones[]` |
-| "show me what the Sims would say, don't post" | Sections 1–3 only |
+| "show me what the Sims would say, don't save" / "don't post" | Sections 1–3 only |
 | "re-evaluate milestone <title> of APP-XXXX" | Sections 2–4 for that milestone only, even if a draft is pending |
 | "revise <project>'s Sim verdicts with the reviewer feedback" | Sections 1–2, then 3–4 only for pairs with `down` feedback on their current revision |
 | "show the pending Sim verdicts for <project>" | Sections 1–2; list `verdicts[]` with status, revision and feedback, save nothing |
