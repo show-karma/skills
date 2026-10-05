@@ -1,7 +1,7 @@
 ---
 name: simocracy-milestone-evaluations
 description: Evaluate a Karma funding application's delivered milestones with the Simocracy Sims of its program and save each Sim's verdict on Karma as a private draft for reviewers to approve. Applications and programs can be named by reference number, id, project name or program name. Use when user says "evaluate milestones with the Sims", "run Sim milestone evaluation", "Sim review of milestone", "which milestones are ready for Sim evaluation", "milestone completion evaluation", "revise the Sim verdicts with the reviewer feedback", "show the pending Sim verdicts".
-version: 0.4.0
+version: 0.5.0
 tags: [simocracy, sim, milestone, evaluation, application, reviewer]
 metadata:
   author: Karma
@@ -22,13 +22,15 @@ INVOCATION_ID=$(uuidgen)
 
 Parse JSON with `python3 -c` (always available); `jq` is not.
 
+**Two ways to reach the API.** Every call below is written as `curl` with an API key. If the Karma MCP connector is available instead, use its tools and skip the key: `call_karma_api` for every `GET`, `commit_write_karma_resource` for the two `POST`s (the draft in section 4 and the publish in section 4b), with the same `/v2/...` path and the same JSON body. The connector signs the call as the person who connected it, so it also covers what an API key cannot: publishing.
+
 **CRITICAL: Every `curl` call must include these headers:**
 
 ```bash
 -H "x-api-key: ${API_KEY}"
 -H "X-Source: skill:simocracy-milestone-evaluations"
 -H "X-Invocation-Id: $INVOCATION_ID"
--H "X-Skill-Version: 0.4.0"
+-H "X-Skill-Version: 0.5.0"
 ```
 
 ---
@@ -40,10 +42,10 @@ If `KARMA_API_KEY` is already set, verify it works:
 ```bash
 curl -s "${BASE_URL}/v2/agent/info" \
   -H "x-api-key: ${API_KEY}" \
-  -H "X-Source: skill:simocracy-milestone-evaluations" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 0.4.0"
+  -H "X-Source: skill:simocracy-milestone-evaluations" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 0.5.0"
 ```
 
-If the response includes `supportedActions` → ready. If `KARMA_API_KEY` is not set, tell the user:
+If the response includes `supportedActions` → ready. If `KARMA_API_KEY` is not set and the Karma MCP connector is available, use the connector and skip this setup. Otherwise tell the user:
 
 > You need to set up your Karma agent first. Run the **setup-agent** skill to configure your API key.
 
@@ -70,7 +72,7 @@ The endpoints take a reference number (`APP-XXXXXXXX-XXXXXX`, also found in Karm
 ```bash
 curl -s "${BASE_URL}/v2/funding-program-configs/my-reviewer-programs" \
   -H "x-api-key: ${API_KEY}" \
-  -H "X-Source: skill:simocracy-milestone-evaluations" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 0.4.0"
+  -H "X-Source: skill:simocracy-milestone-evaluations" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 0.5.0"
 ```
 
 Match the user's words against `name` (case-insensitive, partial is fine: "Batch 3" matches "Filecoin ProPGF Batch 3"). Keep `communitySlug`/`communityName` for the confirmation line. If the user already gave a program id, skip the ladder.
@@ -80,7 +82,7 @@ Match the user's words against `name` (case-insensitive, partial is fine: "Batch
 ```bash
 curl -s "${BASE_URL}/v2/funding-applications/program/${PROGRAM_ID}?status=approved&page=1&limit=100" \
   -H "x-api-key: ${API_KEY}" \
-  -H "X-Source: skill:simocracy-milestone-evaluations" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 0.4.0"
+  -H "X-Source: skill:simocracy-milestone-evaluations" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 0.5.0"
 ```
 
 Follow `pagination.totalPages`. `resolvedProjectName` is the project's current title; when it is null, fall back to the applicant's own answer — the `applicationData` field whose key contains "project name". Take `referenceNumber` from the match. A project name without a program: resolve the program first from the reviewer list (ask which one if the key holder reviews several).
@@ -92,7 +94,7 @@ Confirm the resolution in one line before evaluating: `<project title> → <refe
 ```bash
 curl -s "${BASE_URL}/v2/funding-applications/${REFERENCE_NUMBER}/integrations/simocracy/milestone-evaluation-context" \
   -H "x-api-key: ${API_KEY}" \
-  -H "X-Source: skill:simocracy-milestone-evaluations" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 0.4.0"
+  -H "X-Source: skill:simocracy-milestone-evaluations" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 0.5.0"
 ```
 
 Response:
@@ -145,7 +147,7 @@ One call per milestone × Sim, milestone by milestone, Sims in alphabetical orde
 ```bash
 curl -s -X POST "${BASE_URL}/v2/funding-applications/${REFERENCE_NUMBER}/integrations/simocracy/milestone-evaluations" \
   -H "x-api-key: ${API_KEY}" -H "Content-Type: application/json" \
-  -H "X-Source: skill:simocracy-milestone-evaluations" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 0.4.0" \
+  -H "X-Source: skill:simocracy-milestone-evaluations" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 0.5.0" \
   -d '{"milestoneUid":"<milestones[].milestoneUid>","simUri":"<sims[].simUri>","text":"Verdict: …"}'
 ```
 
@@ -163,14 +165,22 @@ Response `201`: `{ "verdictId": "…", "commentUri": "at://…", "revision": 1, 
 | 409 `verdict_key_collision` | Another milestone × Sim pair maps to the same record | Report it; do not retry |
 | 503 | The Simocracy council could not be read | Retry once after a short wait, then report |
 
-Finish by telling the user how many verdicts were saved (new vs new revision), for which milestones and Sims, which pairs were skipped and why, and any that failed — then say plainly: **"These are private drafts on Karma. They reach Simocracy and the public application page only after a reviewer approves them."** Include the application link (`${BASE_URL}` host without `api.` → `/community/<slug>/manage/funding-platform/<programId>/applications/<referenceNumber>`, or the reference number if the community slug is unknown).
+Finish by telling the user how many verdicts were saved (new vs new revision), for which milestones and Sims, which pairs were skipped and why, and any that failed — then say plainly: **"These are private drafts on Karma. They reach Simocracy and the public application page only after a reviewer approves them."** Include the application link (`${BASE_URL}` host without `api.` → `/community/<slug>/manage/funding-platform/<programId>/applications/<referenceNumber>`, or the reference number if the community slug is unknown). Through the MCP connector, add that the user can publish any of them from here (section 4b).
+
+## 4b. Publish a verdict (MCP connector only)
+
+Publishing is a person's decision, so it is refused with an API key and allowed only through the MCP connector, where the call carries the signed-in user. The user must be the Sim's owner, a community admin or staff. Do it only on an explicit request naming the verdict ("publish S1's verdict on Milestone 2"), never as part of saving drafts, and confirm once before calling: which Sim, which milestone, which `revision`, and that it becomes public on Simocracy and on the application page.
+
+`commit_write_karma_resource` with `POST /v2/funding-applications/${REFERENCE_NUMBER}/integrations/simocracy/milestone-evaluations/<verdictId>/approve` and body `{"revision": <revision>}`. `verdictId` and `revision` come from `verdicts[]` in section 2 (re-read the context first; the Sim may have written a newer revision). Any stored revision may be published, not only the latest; the published one replaces whatever was live.
+
+Response `200`: `{ "verdictId": "…", "commentUri": "at://…", "cid": "…", "publishedRevision": <n>, "alreadyPublished": false }`. Report the milestone, the Sim and the revision now live. Errors: 403 (API key, or the user may not publish this Sim) → say who may; 409 `verdict_revision_conflict` → re-read the context and ask again with the current revision; 409 `publish_in_progress` → someone else is publishing it, wait and re-read; 422 → the milestone is no longer completed, the Sim left the council or the gathering credential is unreadable, report the message; 502/503 → Simocracy did not accept it or could not be read, nothing was published, retry once later.
 
 ## 5. Whole program
 
 ```bash
 curl -s "${BASE_URL}/v2/funding-applications/program/${PROGRAM_ID}?status=approved&page=1&limit=100" \
   -H "x-api-key: ${API_KEY}" \
-  -H "X-Source: skill:simocracy-milestone-evaluations" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 0.4.0"
+  -H "X-Source: skill:simocracy-milestone-evaluations" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 0.5.0"
 ```
 
 Use only `applications[].referenceNumber` from the listing (follow `pagination.totalPages`), then run sections 2–4 per reference. Applications with no completed milestones are skipped and listed in the final summary. Only approved applications have milestones.
@@ -188,6 +198,7 @@ Use only `applications[].referenceNumber` from the listing (follow `pagination.t
 | "re-evaluate milestone <title> of APP-XXXX" | Sections 2–4 for that milestone only, even if a draft is pending |
 | "revise <project>'s Sim verdicts with the reviewer feedback" | Sections 1–2, then 3–4 only for pairs with `down` feedback on their current revision |
 | "show the pending Sim verdicts for <project>" | Sections 1–2; list `verdicts[]` with status, revision and feedback, save nothing |
+| "publish <Sim>'s verdict on <milestone>" | Sections 1–2 to find it, then 4b (MCP connector only) |
 | "run it for every application in program N" / "...in <program name>" | Section 1 if named, then 5 |
 
 ## Edge Cases
@@ -202,4 +213,4 @@ Use only `applications[].referenceNumber` from the listing (follow `pagination.t
 | Posting fails mid-run | Post the remaining pairs, then report the failed ones |
 | The gathering later gets a new Sim | Re-run section 1; only the new Sim's verdicts are missing |
 | A reviewer asks why nothing shows on Simocracy | Drafts are private until approved on Karma; point them to the application's Integrations tab |
-| The user asks the agent to publish or approve | Not possible from here: approval is a reviewer's click on Karma |
+| The user asks the agent to publish or approve | With an API key: not possible, approval is a reviewer's click on Karma. Through the MCP connector: section 4b, on an explicit request, after confirming |
