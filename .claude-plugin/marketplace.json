@@ -65,6 +65,18 @@
       "skills": [
         "./skills/simocracy-milestone-evaluations"
       ]
+    },
+    {
+      "name": "Manage Portfolio Reports",
+      "description": "Build a community's portfolio report from Karma data, show it for approval, save it as a draft and publish on request; find, edit and unpublish reports",
+      "version": "0.2.0",
+      "source": "./",
+      "strict": false,
+      "tags": ["portfolio-report", "report", "community", "admin"],
+      "skills": [
+        "./skills/setup-agent",
+        "./skills/manage-portfolio-reports"
+      ]
     }
   ]
 }
