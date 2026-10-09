@@ -65,6 +65,18 @@
       "skills": [
         "./skills/simocracy-milestone-evaluations"
       ]
+    },
+    {
+      "name": "Manage Portfolio Reports",
+      "description": "Create, find, edit, publish and generate a community's portfolio reports, including reports authored by the agent",
+      "version": "0.1.0",
+      "source": "./",
+      "strict": false,
+      "tags": ["portfolio-report", "report", "community", "admin"],
+      "skills": [
+        "./skills/setup-agent",
+        "./skills/manage-portfolio-reports"
+      ]
     }
   ]
 }
