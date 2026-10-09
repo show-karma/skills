@@ -68,8 +68,8 @@
     },
     {
       "name": "Manage Portfolio Reports",
-      "description": "Create, find, edit, publish and generate a community's portfolio reports, including reports authored by the agent",
-      "version": "0.1.0",
+      "description": "Build a community's portfolio report from Karma data, show it for approval, save it as a draft and publish on request; find, edit and unpublish reports",
+      "version": "0.2.0",
       "source": "./",
       "strict": false,
       "tags": ["portfolio-report", "report", "community", "admin"],

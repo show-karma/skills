@@ -37,7 +37,7 @@ The `SKILL.md` file contains YAML frontmatter (name, description, version, tags)
 | [`funding-program-manager`](skills/funding-program-manager/) | Administer a funding program — manage reviewers, applications, milestones, payouts, grant agreements, and AI evaluations. |
 | [`find-funding-opportunities`](skills/find-funding-opportunities/) | Search the Karma Funding Map for grants, hackathons, bounties, accelerators, VC funds, and RFPs. |
 | [`simocracy-milestone-evaluations`](skills/simocracy-milestone-evaluations/) | Let a program's Simocracy Sims evaluate an application's delivered milestones — name the program and project or pass ids; one GET for the context (answers, completed milestones, council, drafts and reviewer feedback), one POST per verdict; Karma keeps it as a private draft until a reviewer approves it, then posts it to Simocracy as the Sim. |
-| [`manage-portfolio-reports`](skills/manage-portfolio-reports/) | Create, find, edit, publish and generate a community's portfolio reports — save a report you authored as HTML (draft first, publish on request), change its title or body, run a report series. |
+| [`manage-portfolio-reports`](skills/manage-portfolio-reports/) | Build a community's portfolio report from Karma data in the layout of the previous one, show it for approval, then save it as a draft and publish on request; also find, edit and unpublish reports. |
 
 All on-chain skills use the Karma Agent API with a server-side wallet. No gas fees, no browser wallet needed.
 
