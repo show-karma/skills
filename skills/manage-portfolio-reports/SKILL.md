@@ -81,6 +81,26 @@ compact (§3) and send one well-prepared save or edit instead of several round t
 
 ---
 
+## Workflow: show it, iterate, then save once
+
+The user should see the report before Karma does. Saving is not the preview step — the client is.
+
+1. **Build the HTML in the conversation** (§3) and **render it for the user** with the richest
+   means the client has: an HTML artifact / preview pane when available (Claude Desktop, Claude
+   Code artifacts, Cursor); otherwise paste the complete HTML in a code block and describe the
+   layout in a few lines. Do not call Karma yet.
+2. **Iterate there.** Apply the user's changes to the document you already have ("make the KPI
+   cards four across", "add Lantern to highlights", "shorter summary") and re-render. Keep the
+   same `<section id>`s. This loop costs nothing on Karma and is where most edits should happen.
+3. **Save once** when the user is happy (§2): dry-run, show the plan, commit as a draft, hand back
+   the admin preview link so they can check it on the real page.
+4. **Changes after saving**: if the document is still in the conversation, edit it there, re-render,
+   and `PUT` the whole thing (§5). If it is not (new conversation), `GET` the stored HTML first,
+   render it, apply the change, `PUT`. Published reports update live — confirm first.
+5. **Publish** only when asked (§6), then return the public link.
+
+Say which step you are in ("rendering a preview here first; nothing saved to Karma yet").
+
 ## 1. Resolve the community and look around
 
 Users name communities ("Filecoin"); endpoints take the slug. If unsure, list the communities the
@@ -123,7 +143,8 @@ otherwise `www.karmahq.org/community/<slug>`):
 
 ## 2. Save a report you authored
 
-Dry-run first with the **same body** at `/reports/external/preview`; it reports whether the
+Only after the user has seen the rendered document in the conversation (Workflow above). Dry-run
+first with the **same body** at `/reports/external/preview`; it reports whether the
 series will be created, reused or updated, whether the report inserts or conflicts on its date,
 and warnings. Show that to the user, then save.
 
