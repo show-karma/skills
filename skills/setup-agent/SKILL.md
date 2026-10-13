@@ -194,7 +194,7 @@ This setup skill only handles authentication — it does not execute any on-chai
 
 | Issue | Fix |
 |-------|-----|
-| `401 Invalid or revoked API key` | Key is wrong or expired — regenerate via email flow or at karmahq.xyz |
+| `401 Invalid or revoked API key` | Key is wrong or expired — regenerate via email flow or at karmahq.org |
 | `walletAddress: null` | Key was created before server wallets — regenerate it |
 | `Connection refused` | Wrong `KARMA_API_URL` — check the URL is reachable |
 | `KARMA_API_KEY not set` | Run the setup-agent skill again to generate a new key |

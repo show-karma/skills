@@ -1,6 +1,6 @@
 # Karma Funding Map API Reference
 
-**Base URL**: `https://gapapi.karmahq.xyz`
+**Base URL**: `${KARMA_API_URL:-https://gapapi.karmahq.xyz}`
 **Endpoint**: `GET /v2/program-registry/search`
 **Auth**: None (public)
 
