@@ -1,7 +1,7 @@
 ---
 name: manage-portfolio-reports
 description: Build a community's Karma portfolio report from Karma data, show it to the user for approval, then save it to Karma as a draft and publish on request; also find, edit, unpublish and list reports and series. Use when user says "generate a report", "build the biweekly report", "create the monthly report", "upload this report to Karma", "publish the September report", "edit the report", "change the report title", "show me the draft reports", "which report series exist", "unpublish the report".
-version: 0.2.0
+version: 0.2.1
 tags: [portfolio-report, report, community, admin, program-admin]
 metadata:
   author: Karma
@@ -62,7 +62,7 @@ connector exposes dedicated tools (`find_report_configs`, `find_reports`, `get_r
 -H "x-api-key: ${API_KEY}"
 -H "X-Source: skill:manage-portfolio-reports"
 -H "X-Invocation-Id: $INVOCATION_ID"
--H "X-Skill-Version: 0.2.0"
+-H "X-Skill-Version: 0.2.1"
 ```
 
 ## Setup
@@ -72,7 +72,7 @@ If `KARMA_API_KEY` is set, verify it:
 ```bash
 curl -s "${BASE_URL}/v2/agent/info" \
   -H "x-api-key: ${API_KEY}" \
-  -H "X-Source: skill:manage-portfolio-reports" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 0.2.0"
+  -H "X-Source: skill:manage-portfolio-reports" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 0.2.1"
 ```
 
 If the response includes `supportedActions` → ready. If the key is not set and the Karma MCP
@@ -132,6 +132,33 @@ paths, every miss is a wasted call):
 Compute the numbers yourself and keep a short note of the sources and the pull date for the footer.
 Budget: a dozen or so reads is normal; if you are past thirty, stop and write with what you have.
 
+### A2b. Metric definitions — match Karma's own cards, do not invent variants
+
+Karma's generated reports compute turnaround and invoice metrics with fixed rules. When your report
+has the same cards (Milestone/Payment Age, Invoices Pending Payout, turnaround by batch), use
+**exactly** these definitions so numbers stay comparable across reports. If the data needed for a
+card is missing, drop the card and say so in the notes — never substitute a different formula and
+never silently change an anchor.
+
+| Measure | Definition |
+|---|---|
+| Milestone **submitted** | the grantee's completion: `milestone.completed.createdAt`, else the earliest status change to `completed` |
+| Milestone **verified** | the earliest reviewer verification (`milestone.verified[].createdAt`), else the earliest status change to `verified`/`approved` |
+| Invoice **submitted** | `invoiceSentAt`, else `invoiceReceivedAt` |
+| **Paid** | the DISBURSED `payout_disbursement.executedAt` matched to the milestone (via `milestoneBreakdown`), else the grant-level disbursement; the invoice's own status is **not** a payment |
+| **Payout-ready** (`readyAt`) | the **later** of milestone verified and invoice submitted; a verified milestone with no invoice is ready at verification; an unverified milestone is never ready |
+| Milestone processing (days) | submitted → verified |
+| Invoice processing (days) | payout-ready → paid |
+| Total age (days) | submitted → paid |
+| Negative durations | a payment (or verification) dated **before** its start **is excluded** (`null`) — it is **not** counted as 0 days |
+| Days | fractional (`ms / 86 400 000`), not rounded; pending-table age is `floor(asOf − readyAt)` in days |
+| Card statistics | count, median (middle value, mean of the two middle values when even), average, min, max, and the distribution `0–7 / 8–14 / 15–30 / 30+` days |
+| "Verified" for the pending-invoice table | milestone status `verified` or `approved` |
+| As-of cutoff | events after the report's cutoff date count as not having happened |
+
+State the cutoff date in the report. If a number differs from the previous report, explain the data
+reason (new events, corrected dates), not a methodology change — methodology must not change.
+
 ### A3. Write the HTML (authoring contract)
 
 A complete, self-styled document, compact: aim for 10–20 KB. Every KB is text you generate inside
@@ -178,7 +205,7 @@ the plan (series reuse/create/update, insert vs conflict on the date, warnings),
 ```bash
 curl -s -X POST "${BASE_URL}/v2/communities/${SLUG}/reports/external" \
   -H "x-api-key: ${API_KEY}" -H "Content-Type: application/json" \
-  -H "X-Source: skill:manage-portfolio-reports" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 0.2.0" \
+  -H "X-Source: skill:manage-portfolio-reports" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 0.2.1" \
   -d @body.json
 ```
 
