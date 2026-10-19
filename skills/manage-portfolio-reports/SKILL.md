@@ -1,7 +1,7 @@
 ---
 name: manage-portfolio-reports
 description: Build a community's Karma portfolio report from Karma data, show it to the user for approval, then save it to Karma as a draft and publish on request; also find, edit, unpublish and list reports and series. Use when user says "generate a report", "build the biweekly report", "create the monthly report", "upload this report to Karma", "publish the September report", "edit the report", "change the report title", "show me the draft reports", "which report series exist", "unpublish the report".
-version: 0.5.0
+version: 0.5.2
 tags: [portfolio-report, report, community, admin, program-admin]
 metadata:
   author: Karma
@@ -27,9 +27,9 @@ a run: every lever is a byte you type or a round trip you make.
    hard stop at `7 + P`, plus the two §A1 calls if the user asked you to match a past report. **Never
    fan out per project** — that one habit was ~48 calls and three minutes — and never look up API
    docs for a path named here.
-3. **Link each project once, at its first mention** (§A3.4). Hrefs were 20.7% of the last real
-   report's bytes — more than all its CSS — and **half of those bytes were the same 32 URLs typed 77
-   times.** Repeating a URL you already typed buys nothing.
+3. **Link project names in tables, not in prose** (§A3.4). Hrefs were 20.7% of the last real report's
+   bytes, more than all its CSS, because names were linked everywhere they appeared. Table rows stay
+   clickable; a project named in a sentence does not need to be.
 4. **The design is the author's call, not yours to invent from scratch.** If the user gave you a
    design, or named a past report to match, follow it. Otherwise §A3.2 has a compact sheet you can
    paste as-is and extend. Writing a fresh theme every report is minutes the user pays for nothing.
@@ -71,7 +71,7 @@ stylesheet, no scripts, no remote resources — and Karma never regenerates them
 BASE_URL="${KARMA_API_URL:-https://api.karmahq.org}"
 API_KEY="${KARMA_API_KEY}"
 INVOCATION_ID=$(uuidgen)
-SKILL_VERSION="0.5.0"
+SKILL_VERSION="0.5.2"
 KH=(-H "x-api-key: ${API_KEY}" -H "Content-Type: application/json"
     -H "X-Source: skill:manage-portfolio-reports"
     -H "X-Invocation-Id: ${INVOCATION_ID}"
@@ -184,6 +184,14 @@ suffix: `/v2/programs/1013_42161/financials` returns 200 with `programName` degr
 
 This is the whole list; nothing outside it without asking the user first.
 
+**Issue them in ONE turn, not one per turn.** Everything below is independent once §A1 gave you the
+`programIds`: calls 3, 4 and every call 5, plus §A1's reference lookup if the user asked for one. Emit
+them as several tool calls in a single message and the client runs them concurrently, so the whole
+gather costs about one round trip instead of five. Emitting one, reading it, then emitting the next is
+the single most common way this skill ends up slow: the data does not need the previous answer, only
+your patience does. The one real ordering constraint is §A1 before everything else, because the
+`programIds` come from it.
+
 **The speed of this list does not depend on `report-metrics`.** Banning the per-project fan-out below
 is what removes ~190 s; `report-metrics` replaces call 3 one for one, so it is worth one round trip
 plus ~330 KB of context and the §A2b arithmetic you no longer run. Until it ships, call 3 and §A2b are
@@ -195,13 +203,17 @@ the normal path, not a degraded one.
    Returns the three computed cards — and only those; the money still comes from call 5 and the
    awaiting-verification set from call 4: `processingAging`, `pendingInvoices.rows`, and
    `milestoneProgress.programs` with per-project `slug` / `completed` / `total` / `isDelayed` /
-   `overdueCount` / `maxDaysLate`. **Not deployed on production today — expect a 404**, which still
-   costs a round trip. Skip call 2 outright if `KARMA_REPORT_METRICS=off` is set or the user has told
-   you this indexer predates the endpoint; otherwise try it once per run and fall through on 404.
-3. **`GET /v2/communities/{slug}/payouts?limit=1000`** — call 2's fallback (so: required today), and
-   also needed when the report quotes real milestone text. ~332 KB on 54 grants. Envelope
-   `{payload, pagination}` — the grant rows are under `payload`, one page at `limit=1000`. `limit` max
-   1000, **default 10** — always pass it; `programId` takes one id, not a list. Gives every grant's
+   `overdueCount` / `maxDaysLate`. **Not deployed on production as of this skill's version — it 404s**, and
+   that 404 is a wasted round trip, confirmed on a real run. **Skip call 2 by default.** Make it only
+   if the user says the endpoint is live, or sets `KARMA_REPORT_METRICS=on`. Call 3 plus §A2b is the
+   normal path; when call 2 does ship it replaces call 3 one for one.
+3. **`GET /v2/communities/{slug}/payouts?programId={bareProgramId}&limit=1000`** — call 2's fallback
+   (so: required today), and also needed when the report quotes real milestone text. **One call per
+   program, all in the same turn**, never one unfiltered call: unfiltered it returns every grant in
+   the community, measured at 475 KB on filecoin, which overflows the tool result, lands in a file and
+   costs you an extra processing step before you can read it. `programId` takes one bare id, not a
+   list, which is why this is one call per program. Envelope `{payload, pagination}` — the grant rows
+   are under `payload`, one page at `limit=1000`. `limit` max 1000, **default 10** — always pass it. Gives every grant's
    `project{uid,title,slug}`, `grant{programId,adminPayoutAmount}`, `disbursements.history[]`
    (`executedAt`, `milestoneBreakdown`) and `milestoneInvoices[]` for **every** milestone (label,
    status, due date, invoice timestamps, `paymentStatus`, `paymentStatusDate`, `completionReason`) —
@@ -399,16 +411,19 @@ The frame is `sandbox=""` (opaque origin) and the CSP sets `base-uri 'none'`, so
 resolves against nothing and a `<base>` tag is stripped: every link must be **absolute and complete**.
 That is why a repeat costs the whole URL again, ~45 bytes.
 
-1. **One anchor per project, at its first mention,** normally the project table:
-   `<a href="https://www.karmahq.org/project/{projectSlug}">{Project Name}</a>`. Every later mention
-   of that project is plain text. Keeping the anchors in one section is the easy way to be sure, and
-   §A3.5's counter checks for duplicate URLs however you lay it out.
+1. **Link where a reader would click, plain text everywhere else.** A project name in a **table row**
+   is a link, every row, every table — a row the reader cannot click is worse than a few bytes.
+   `<a href="https://www.karmahq.org/project/{projectSlug}">{Project Name}</a>`. A project named in a
+   sentence, a bullet or a KPI subtitle is plain text: nobody clicks prose, and the same URL typed a
+   third time costs its full ~45 bytes again.
+   Repeating a URL across tables is a deliberate, cheap trade — about 45 bytes, half a second — and
+   §A3.5 reports duplicates so you can see what it cost, not to stop you.
 2. **If the slug is `null` or missing, print the project name as plain text and link nothing.** Never
    write `/project/null`, never substitute the project UID, and never guess a slug from the name —
    slugs are stored, not derived, and real ones contain doubled hyphens that a slugify would not
    produce.
-3. **No URL appears twice in the document.** That is the rule the counter enforces; where you put
-   the anchors is your layout decision.
+3. **Do not repeat a URL inside one section.** Linking the same project twice in the same table, or
+   in a sentence right beside its own row, is paid-for noise. Across different tables it is fine.
 4. Link projects, not everything: a grant, program or milestone link is bytes for a page nobody
    clicks from a report, and `mailto:` is dropped silently (only `https` survives), so you paid to
    type it.
@@ -416,8 +431,8 @@ That is why a repeat costs the whole URL again, ~45 bytes.
    Use the community's own site host only when the user gives it
    (e.g. `https://app.filpgf.io/project/{slug}`).
 
-If the user asks for a project linked in more than one place, do it and say so in your reply — the
-duplicate-URL gate will flag it, and that flag is information, not a veto.
+The §A3.5 duplicate-URL line is information, never a veto: it tells you what the repeats cost so you
+can judge them. A clickable table beats a smaller file.
 
 #### A3.5 Measure the draft, then say what it costs
 
@@ -448,7 +463,8 @@ paid by whoever asked and they cannot see it coming.
 
 Two findings are worth fixing before you show anything, because they cost bytes and buy nothing:
 
-- **Duplicate URLs.** Unwrap the repeats (§A3.4). In the last real report this alone was 2,754 B.
+- **Duplicate URLs inside one section** (§A3.4). Across tables they are a deliberate trade; inside one
+  they are noise. In the last real report repeats alone were 2,754 B.
 - **Inline `style="` attributes.** Move them into the one `<style>` element.
 
 **With no shell, plan before you type** — do not estimate bytes, count elements. Measured costs:
