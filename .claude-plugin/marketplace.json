@@ -69,7 +69,7 @@
     {
       "name": "Manage Portfolio Reports",
       "description": "Build a community's portfolio report from Karma data, show it for approval, save it as a draft and publish on request; find, edit and unpublish reports",
-      "version": "0.2.1",
+      "version": "0.5.0",
       "source": "./",
       "strict": false,
       "tags": ["portfolio-report", "report", "community", "admin"],
