@@ -1,7 +1,7 @@
 ---
 name: manage-portfolio-reports
 description: Build a community's Karma portfolio report from Karma data, show it to the user for approval, then save it to Karma as a draft and publish on request; also find, edit, unpublish and list reports and series. Use when user says "generate a report", "build the biweekly report", "create the monthly report", "upload this report to Karma", "publish the September report", "edit the report", "change the report title", "show me the draft reports", "which report series exist", "unpublish the report".
-version: 0.6.0
+version: 0.6.1
 tags: [portfolio-report, report, community, admin, program-admin]
 metadata:
   author: Karma
@@ -17,6 +17,8 @@ approves. You are the author; Karma stores and renders what you wrote.
 
 **Speed.** You type ~1 KB every 6 s, so the document's size *is* the user's wait.
 
+0. **Use curl over the connector** when a shell and a key are both available: responses go to files
+   instead of the context, and the save sends a file instead of retyping the document.
 1. Type the document **once**. Author into `body.html`, show it **by path**, send it with
    `-d @body.json`. With no file handle (MCP connector) the show costs one emission and the save a
    second: two is the floor there, each revision adds another.
@@ -46,10 +48,16 @@ BASE_URL="${KARMA_API_URL:-https://api.karmahq.org}"
 INVOCATION_ID=$(uuidgen)
 KH=(-H "x-api-key: ${KARMA_API_KEY}" -H "Content-Type: application/json"
     -H "X-Source: skill:manage-portfolio-reports"
-    -H "X-Invocation-Id: ${INVOCATION_ID}" -H "X-Skill-Version: 0.6.0")
+    -H "X-Invocation-Id: ${INVOCATION_ID}" -H "X-Skill-Version: 0.6.1")
 ```
 
 Every `curl` below passes `"${KH[@]}"`. Parse JSON with `python3`; `jq` is unavailable.
+
+**Prefer the curl path whenever a shell and a key exist.** It is not a formatting preference: with
+curl, responses land in **files** and only the few fields you extract reach the conversation, and the
+document is sent with `-d @body.json` instead of being retyped. On the MCP connector every response
+enters the context whole — one `payouts` call is ~235 KB and truncates — and every write body is typed
+out again. Measured on the same report: 5 minutes on the connector, 2 minutes with a key.
 
 **On the MCP connector:** `call_karma_api` for every `GET`, `commit_write_karma_resource` for every
 `POST`/`PUT`, same paths and JSON; the headers above are curl-only. There are no dedicated
@@ -58,7 +66,9 @@ paths here are complete — whatever their descriptions say.
 
 Do not probe `GET /v2/agent/info`. §A1's first call is the check: 401 = key missing or wrong, 403 =
 not an admin of this community (say so and stop; do not retry elsewhere). With no key and no
-connector, tell the user to run the **setup-agent** skill; do not handle key registration here.
+connector, tell the user to run the **setup-agent** skill; do not handle key registration here. If a
+shell is available and only the connector is, say once that setting `KARMA_API_KEY` (the
+**setup-agent** skill issues one) roughly halves the run, then carry on without it.
 
 **Model.** A community has **series** (`name`, `programIds`, `prompt`, `modelId`, `schedule`,
 `isActive`). Each series holds **reports**, one per `runDate`, `draft` until published. Reports you
