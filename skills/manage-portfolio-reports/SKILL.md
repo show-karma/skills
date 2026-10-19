@@ -1,7 +1,7 @@
 ---
 name: manage-portfolio-reports
 description: Build a community's Karma portfolio report from Karma data, show it to the user for approval, then save it to Karma as a draft and publish on request; also find, edit, unpublish and list reports and series. Use when user says "generate a report", "build the biweekly report", "create the monthly report", "upload this report to Karma", "publish the September report", "edit the report", "change the report title", "show me the draft reports", "which report series exist", "unpublish the report".
-version: 0.6.1
+version: 0.7.0
 tags: [portfolio-report, report, community, admin, program-admin]
 metadata:
   author: Karma
@@ -15,7 +15,8 @@ approves. You are the author; Karma stores and renders what you wrote.
 
 ## Rules
 
-**Speed.** You type ~1 KB every 6 s, so the document's size *is* the user's wait.
+**Speed.** Two things decide how long the user waits: how many bytes you type, and whether the data
+has to pass through the conversation to reach you. Keep both small.
 
 0. **Use curl over the connector** when a shell and a key are both available: responses go to files
    instead of the context, and the save sends a file instead of retyping the document.
@@ -48,7 +49,7 @@ BASE_URL="${KARMA_API_URL:-https://api.karmahq.org}"
 INVOCATION_ID=$(uuidgen)
 KH=(-H "x-api-key: ${KARMA_API_KEY}" -H "Content-Type: application/json"
     -H "X-Source: skill:manage-portfolio-reports"
-    -H "X-Invocation-Id: ${INVOCATION_ID}" -H "X-Skill-Version: 0.6.1")
+    -H "X-Invocation-Id: ${INVOCATION_ID}" -H "X-Skill-Version: 0.7.0")
 ```
 
 Every `curl` below passes `"${KH[@]}"`. Parse JSON with `python3`; `jq` is unavailable.
@@ -56,8 +57,9 @@ Every `curl` below passes `"${KH[@]}"`. Parse JSON with `python3`; `jq` is unava
 **Prefer the curl path whenever a shell and a key exist.** It is not a formatting preference: with
 curl, responses land in **files** and only the few fields you extract reach the conversation, and the
 document is sent with `-d @body.json` instead of being retyped. On the MCP connector every response
-enters the context whole — one `payouts` call is ~235 KB and truncates — and every write body is typed
-out again. Measured on the same report: 5 minutes on the connector, 2 minutes with a key.
+enters the context whole — a wide `payouts` call can be large enough that the client truncates it,
+costing extra reads to recover — and every write body is typed out again. On the same report the
+difference has been most of the wall clock.
 
 **On the MCP connector:** `call_karma_api` for every `GET`, `commit_write_karma_resource` for every
 `POST`/`PUT`, same paths and JSON; the headers above are curl-only. There are no dedicated
@@ -178,7 +180,7 @@ match a past report. **Hard stop at `7 + P`.** At the stop, write with what you 
 order: `#upcoming`, `#highlights`, `#pending`, then KPI cards whose input is missing. **Never drop a
 money row** — name the missing programs in `#notes` instead. Never improvise a replacement call.
 
-**Banned.** `…/projects/{slug}/grants` (82 KB per project; the one exception is §A2b's explicit-yes
+**Banned.** `…/projects/{slug}/grants` (one call per project, each large; the one exception is §A2b's explicit-yes
 path) · `…/grants?limit=200` · `…/programs` · `…/report-configs/{configId}` · any
 `{programId}_{chainID}` · `search_karma_api_docs` · `get_karma_api_operation` · `GET /v2/agent/info` ·
 `POST …/reports/generate` (safety rule 5 only).
@@ -202,8 +204,8 @@ computable** from any call on the list. Therefore:
   read API."* Never approximate them from `milestoneStatusUpdatedAt`.
 - Never copy those cards forward from a previous report. Without the verification timestamps you
   cannot know whether they changed.
-- If the user insists, quote the cost — one `…/projects/{slug}/grants` per project, ~82 KB and ~4 s
-  each — and get an **explicit yes** first. It does not raise the hard stop.
+- If the user insists, quote the cost — one `…/projects/{slug}/grants` per project, every project,
+  each one large — and get an **explicit yes** first. It does not raise the hard stop.
 
 A card whose data is missing is dropped and noted, never recomputed with a different formula.
 
@@ -323,14 +325,16 @@ b = len(h.encode())
 hrefs = re.findall(r'href="([^"]+)"', h)
 dupes = [u for u, n in collections.Counter(hrefs).items() if n > 1]
 css = sum(len(x.encode()) for x in re.findall(r"<style[^>]*>.*?</style>", h, re.S))
-print("bytes", b, "->", round(b / 1024 * 5.8), "s to type (double with no file handle)")
+print("bytes", b, "(typed twice when the client has no file handle)")
 print("css", css, "| anchors", len(hrefs), "|", len(set(hrefs)), "distinct")
 print("duplicate urls:", dupes or "none")
 print("inline style attrs:", len(re.findall(r'style="', h)))
 PY
 ```
 
-Tell the user the number with the draft: *"this is 14 KB, about 80 seconds to type."*
+Tell the user the size with the draft: *"this one is 14 KB."* If you know how long the last document
+of a similar size took in this session, say that too — but do not convert bytes to seconds with a
+fixed rate. The rate moves with the client, the model and how much context is already loaded.
 
 Worth fixing before you show anything, because they cost bytes and buy nothing: duplicate URLs inside
 one section, and inline `style="` attributes. If it is still bigger than the user will want to wait
