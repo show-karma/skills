@@ -1,7 +1,7 @@
 ---
 name: funding-program-manager
-description: Create and manage funding programs on Karma — create programs in the registry, configure intake forms, apply to programs, manage reviewers, applications, milestones, payouts, grant agreements, and AI evaluation. Use when user says "create a program", "new funding program", "set up grants program", "configure intake form", "add form fields", "apply to program", "submit application", "apply for grant", "manage program", "list reviewers", "add reviewer", "remove reviewer", "review applications", "approve application", "reject application", "application status", "list applications", "milestone completions", "pending milestones", "create payout", "disbursement", "payout history", "grant agreement", "sign agreement", "evaluate application", "AI score", "application comment", "enable applications", "update program", "my programs", "which programs do I manage", "program financials", "project milestones", "waiting verification", "milestone report", "project updates", "milestone invoices", "unpaid invoices", or any funding program administration action.
-version: 1.2.0
+description: Create and manage funding programs on Karma — create programs in the registry, configure intake forms, apply to programs, manage reviewers, applications, milestones, payouts, grant agreements, and AI evaluation. Use when user says "create a program", "new funding program", "set up grants program", "configure intake form", "add form fields", "apply to program", "submit application", "apply for grant", "manage program", "list reviewers", "add reviewer", "remove reviewer", "review applications", "approve application", "reject application", "application status", "list applications", "milestone completions", "pending milestones", "create payout", "disbursement", "payout history", "grant agreement", "sign agreement", "evaluate application", "AI score", "application comment", "enable applications", "update program", "my programs", "which programs do I manage", "program financials", "project milestones", "waiting verification", "milestone report", "project updates", "milestone invoices", "unpaid invoices", "my review queue", "reviewer inbox", "what do I need to review", "which programs do I review", "who is assigned", "application history", "private note", "KYC status", "milestone timeline", or any funding program administration action.
+version: 1.3.0
 tags: [program, reviewer, application, milestone, payout, agreement, evaluation, admin]
 metadata:
   author: Karma
@@ -255,7 +255,19 @@ curl -s "${BASE_URL}/v2/funding-program-configs/${PROGRAM_ID}" \
 
 ### Discover Your Programs
 
-Answers "which programs do I manage?". Two steps: list the communities where your key is admin, then list each community's programs.
+Answers "which programs do I manage?" and "which programs do I review?". The two roles are discovered separately — run both, because a reviewer who is not a community admin gets an empty admin list.
+
+**As a reviewer** (application or milestone reviewer):
+
+```bash
+curl -s "${BASE_URL}/v2/funding-program-configs/my-reviewer-programs" \
+  -H "x-api-key: ${API_KEY}" \
+  -H "X-Source: skill:funding-program-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 1.3.0"
+```
+
+Returns the full program config per program, plus `communitySlug`, `communityName` and the two role flags: `isProgramReviewer` (application reviewer) and `isMilestoneReviewer`. Only programs where the key is explicitly listed as a reviewer appear — a community admin who was never added as a reviewer gets an empty list and still sees every program through the admin path below.
+
+**As a community admin**: list the communities where your key is admin, then list each community's programs.
 
 ```bash
 curl -s "${BASE_URL}/v2/user/communities/admin" \
@@ -630,6 +642,74 @@ Both arrays are optional — provide at least one. Addresses must be valid Ether
 
 ---
 
+## 7b. Reviewer Workspace (Read-Only)
+
+Everything an application reviewer or milestone reviewer can look up. All calls are `GET` and need `x-api-key`. Full data comes back only for programs the key reviews or administers; `/access` on an application says which role the key has there (`PROGRAM_REVIEWER`, `SUPER_ADMIN`, ...).
+
+```bash
+curl -s "${BASE_URL}${PATH_AND_QUERY}" \
+  -H "x-api-key: ${API_KEY}" \
+  -H "X-Source: skill:funding-program-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 1.3.0"
+```
+
+### Reviewer Inbox
+
+`GET /v2/funding-applications/community/${COMMUNITY_UID_OR_SLUG}/reviewer-inbox` — the reviewer's whole queue in one community: applications to review **and** milestones to verify, across every program.
+
+| Param | Values |
+|-------|--------|
+| `kind` | `application`, `milestone` |
+| `programId` | Limit to one program |
+| `projectUid` | Limit to one project |
+| `status` | `pending`, `under_review`, `approved`, `rejected`, `revision_requested`, `resubmitted`, `withdrawn` |
+| `search` | Free text |
+| `pendingActionItems` | `true`, `false` |
+| `inboxSort` | `priority`, `follow_up_date` |
+| `reviewerAddress` | Community admins only: view another reviewer's inbox |
+| `page`, `limit` | Pagination (default limit 25) |
+
+Response: `{ items, pagination, stats }`. Each item has `kind`, `bucket` (`action` / `waiting` / `done`), `status`, `title`, `programId`, `projectUid`, `attentionReason`, `stageAgeDays`, `openActionItems`; applications add `referenceNumber`, `who`, `submittedAt`; milestones add `milestoneUid`, `grantUid`, `dueLabel`, `overdue`. `stats` counts the full feed (not just the page): `action`, `waiting`, `overdue`, `pendingReview`, `awaitingReview`, `awaitingInvoice`, `kybPending`, `agreementPending` and more.
+
+Start here for "what do I need to review" — then drill into one item with the reads below.
+
+**An empty inbox is not "nothing to review".** A reviewer with no items in the inbox can still read every application of the programs they review. When `items` is empty, fall back to listing each reviewer program's applications (section 3) and its milestones waiting verification (section 8, with `programIds`), and say that nothing is in their own queue.
+
+**Programs the key does not review** return the public view from the application list: applicant email, owner address and private fields come back blank, and programs with private applications return an empty list. Do not present that as the full picture — check `my-reviewer-programs` first.
+
+### One Application
+
+| Question | Path |
+|----------|------|
+| What may I do on this application? | `/v2/funding-applications/${REFERENCE_NUMBER}/access` → `accessRole`, `canView`, `canEdit`, `canReview`, `canAdminister`, `isOwner` |
+| Full answers, status history, approved amount, AI evaluation | `/v2/funding-applications/${REFERENCE_NUMBER}` (section 3) |
+| Who is assigned? | `/v2/funding-applications/${REFERENCE_NUMBER}/reviewers` → `appReviewers[]`, `milestoneReviewers[]` (addresses; match them to names with the program reviewer lists in sections 5 and 6) |
+| What changed between submissions? | `/v2/funding-applications/${REFERENCE_NUMBER}/versions/timeline` → 404 `Version Not Found` when the application was never edited; otherwise per version: `versionNumber`, `submittedBy`, `changeCount`, `diffFromPrevious.changedFields[]` (`fieldLabel`, `changeType`, `oldValue`, `newValue`) |
+| Discussion with the applicant | `/v2/applications/${REFERENCE_NUMBER}/comments?admin=true` (section 12) |
+| Private reviewer note | `/v2/applications/${REFERENCE_NUMBER}/notes` → `note` (null when none). Never visible to applicants |
+| KYC / KYB status | `/v2/funding-applications/${REFERENCE_NUMBER}/kyc-status` → 404 `Verification Not Found` when no verification was started; otherwise `status`, `verificationType`, `verifiedAt`, `expiresAt`, `isExpired` |
+| Team members | `/v2/funding-applications/${REFERENCE_NUMBER}/team-members` |
+| The application of a known project | `/v2/funding-applications/project/${PROJECT_UID}?programId=${PROGRAM_ID}` — without `programId` the newest application is returned |
+| Invoice setup | `/v2/funding-applications/${REFERENCE_NUMBER}/invoice-config` |
+
+### One Milestone or Grant
+
+| Question | Path |
+|----------|------|
+| Milestone details, completion note and proof | `/v2/projects/${PROJECT_UID_OR_SLUG}/grants` (section 8) |
+| AI evaluation of the milestone | `/v2/milestones/${MILESTONE_UID}/evaluation` |
+| Reviewer discussion on the grant | `/v2/grants/${PROJECT_UID}/${PROGRAM_ID}/comments` |
+| Is an invoice required? | `/v2/grants/${GRANT_UID}/invoice-requirement` → `invoiceRequired` |
+| Budget, committed and disbursed per project | `/v2/programs/${PROGRAM_ID}/financials` (section 2) |
+| Invoices, grant agreement, payout history, pending payouts | Sections 9 and 10 — program admins only |
+| Lifecycle timeline and stage durations | `/v2/milestone-action-items/${COMMUNITY_UID_OR_SLUG}/milestones/${MILESTONE_UID}/timeline` — community admins and staff only |
+| Follow-up notes on the milestone | `/v2/milestone-action-items/${COMMUNITY_UID_OR_SLUG}/milestones/${MILESTONE_UID}/items` — community admins and staff only |
+
+Reviewers get 403 on the admin-only rows: `Required permission: program:edit` for invoices, agreement and payouts, `community:edit` for the timeline and follow-up notes. That is the role boundary, not a broken key — tell them those views belong to program or community admins, and offer the financials and invoice-requirement reads instead.
+
+Several of these reads answer 404 for "nothing recorded yet" (version timeline, KYC status, grant agreement). Report that as "none on file", not as an error.
+
+---
+
 ## 8. Milestones
 
 ### List a Project's Grant Milestones
@@ -648,12 +728,14 @@ Each grant carries `milestones[]` with `uid`, `title`, `endsAt`, `currentStatus`
 ### Milestones Waiting Verification (Community-Wide)
 
 ```bash
-curl -s "${BASE_URL}/v2/communities/${COMMUNITY_UID_OR_SLUG}/milestones/pending-verification?page=1&limit=20" \
+curl -s "${BASE_URL}/v2/communities/${COMMUNITY_UID_OR_SLUG}/milestones/pending-verification?page=1&pageLimit=20" \
   -H "x-api-key: ${API_KEY}" \
   -H "X-Source: skill:funding-program-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 1.2.0"
 ```
 
-Each row carries `milestoneUid`, `milestoneTitle`, `grantUid`, `grantTitle`, `programId`, `projectUid`, `projectTitle`, `completedAt`.
+The page size param is `pageLimit` (default 50) — `limit` is ignored. Optional filters: `programIds` (comma-separated) and `reviewerAddress`. Rows are under `data`, totals under `pageInfo`.
+
+Each row carries `milestoneUid`, `milestoneTitle`, `grantUid`, `grantTitle`, `programId`, `projectUid`, `projectTitle`, `completedAt`, `dueDate`.
 
 ### Milestone Completion Report (Community-Wide)
 
@@ -755,7 +837,7 @@ curl -s "${BASE_URL}/v2/milestone-invoices/grant/${GRANT_UID}" \
   -H "X-Source: skill:funding-program-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 1.2.0"
 ```
 
-Per-milestone invoice status (`not_submitted`, `received`, ...), payment status, and amounts. Related reads: `GET /v2/milestone-invoices/${GRANT_UID}/invoice-requirement` and `GET /v2/milestone-invoices/${REFERENCE_NUMBER}/invoice-config`.
+Per-milestone invoice status (`not_submitted`, `received`, ...), payment status, and amounts. Related reads: `GET /v2/grants/${GRANT_UID}/invoice-requirement` and `GET /v2/funding-applications/${REFERENCE_NUMBER}/invoice-config`.
 
 **Invoice processing time**: for paid invoices, compute `invoiceReceivedAt` -> the payout's `paymentStatusDate`; for invoices still unpaid, compute `invoiceReceivedAt` -> now (outstanding age), and label them as unpaid rather than processed. `invoiceSentAt` is a different lifecycle field and is often null — do not use it for processing-time questions.
 
@@ -864,6 +946,15 @@ curl -s -X POST "${BASE_URL}/v2/applications/${REFERENCE_NUMBER}/comments" \
 | "reject application" | Update status to `rejected` |
 | "request revision" | Update status to `revision_requested` |
 | "which programs do I manage", "my programs" | Discover your programs (admin communities -> community programs) |
+| "which programs do I review", "where am I a reviewer" | `my-reviewer-programs` (section 2) |
+| "my review queue", "what do I need to review", "reviewer inbox" | Reviewer inbox (section 7b) |
+| "applications assigned to me", "milestones assigned to me" | Reviewer inbox with `kind=application` or `kind=milestone` |
+| "who is assigned to this application" | Get assigned reviewers (section 7b) |
+| "what changed in this application", "application history" | Application version timeline |
+| "show the private note", "internal note" | Get application private note |
+| "KYC status", "is KYB done" | Get KYC status by reference |
+| "can I review this application", "my permissions" | Check application access |
+| "milestone timeline", "why is this milestone stuck" | Milestone timeline and follow-up notes (admins and staff) |
 | "program financials", "budget vs committed", "how much committed" | Get program financials |
 | "milestone completions", "show milestones", "grant milestones" | List the project's grant milestones (via grants) |
 | "project roadmap milestones" | `GET /v2/projects/{id}/milestones` (roadmap, not grant deliverables) |
