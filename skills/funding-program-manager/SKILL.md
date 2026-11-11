@@ -656,6 +656,8 @@ curl -s "${BASE_URL}${PATH_AND_QUERY}" \
 
 `GET /v2/funding-applications/community/${COMMUNITY_UID_OR_SLUG}/reviewer-inbox` — the caller's queue in one community: applications to review **and** milestones to verify, across every program. A reviewer gets only the items they are assigned to; a community admin gets everything in the community.
 
+The inbox is per community. For an open question like "what do I need to review?", collect the communities from `my-reviewer-programs` (`communitySlug`) and from the admin communities list, and query each one — or ask which community when there are many.
+
 | Param | Values |
 |-------|--------|
 | `kind` | `application`, `milestone` |
@@ -669,11 +671,11 @@ curl -s "${BASE_URL}${PATH_AND_QUERY}" \
 | `reviewerAddress` | Community admins only: view another reviewer's inbox |
 | `page`, `limit` | Pagination (default limit 25) |
 
-Response: `{ items, pagination, stats }`. Each item has `kind`, `bucket` (`action` / `waiting` / `done`), `status`, `title`, `programId`, `projectUid`, `attentionReason`, `stageAgeDays`, `openActionItems`; applications add `referenceNumber`, `who`, `submittedAt`; milestones add `milestoneUid`, `grantUid`, `dueLabel`, `overdue`. `stats` counts the full feed (not just the page): `action`, `waiting`, `overdue`, `pendingReview`, `awaitingReview`, `awaitingInvoice`, `kybPending`, `agreementPending` and more.
+Response: `{ items, pagination, stats }`. Each item has `kind`, `bucket` (`action` / `waiting` / `done`), `status`, `title`, `programId`, `projectUid`, `attentionReason`, `stageAgeDays`, `openActionItems`; applications add `referenceNumber`, `who`, `submittedAt`; milestones add `milestoneUid`, `grantUid`, `dueLabel`, `overdue`. A page holds 25 items by default: follow `pagination.totalPages` before presenting a full queue, or say the list is partial. `stats` counts the full feed (not just the page): `action`, `waiting`, `overdue`, `pendingReview`, `awaitingReview`, `awaitingInvoice`, `kybPending`, `agreementPending` and more.
 
 Start here for "what do I need to review" — then drill into one item with the reads below.
 
-**An empty inbox is not "nothing to review".** It means nothing is assigned to this reviewer — they can still read every application of the programs they review. When `items` is empty, say that nothing is assigned to them, then offer each reviewer program's applications (section 3) and its milestones waiting verification (section 8, with `programIds`).
+**An empty inbox is not "nothing to review".** It means nothing is assigned to this reviewer — they can still read every application of the programs they review. That holds only for an unfiltered call: an empty result under `kind`, `status`, `attention` or `programId` says nothing about the rest of the queue, so report it as "none matching that filter" and check the unfiltered inbox before saying the queue is empty. When the unfiltered `items` is empty, say that nothing is assigned to them, then offer each reviewer program's applications (section 3) and its milestones waiting verification (section 8, with `programIds`).
 
 **Programs the key does not review** return the public view from the application list: applicant email, owner address and private fields come back blank, and programs with private applications return an empty list. Do not present that as the full picture — check `my-reviewer-programs` first.
 
@@ -734,7 +736,7 @@ curl -s "${BASE_URL}/v2/communities/${COMMUNITY_UID_OR_SLUG}/milestones/pending-
   -H "X-Source: skill:funding-program-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 1.2.0"
 ```
 
-The page size param is `pageLimit` (default 50) — `limit` is ignored. Optional filters: `programIds` (comma-separated) and `reviewerAddress`. Rows are under `data`, totals under `pageInfo`.
+The page size param is `pageLimit` (default 50) — `limit` is ignored. Optional filters: `programIds` (comma-separated) and `reviewerAddress`. Rows are under `data`, totals under `pageInfo` — when `pageInfo.totalItems` exceeds the rows returned, fetch the next pages before answering "all milestones waiting verification".
 
 Each row carries `milestoneUid`, `milestoneTitle`, `grantUid`, `grantTitle`, `programId`, `projectUid`, `projectTitle`, `completedAt`, `dueDate`.
 
@@ -806,7 +808,7 @@ curl -s "${BASE_URL}/v2/payouts/grant/${GRANT_UID}/history?page=1&limit=20" \
   -H "X-Source: skill:funding-program-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 1.0.0"
 ```
 
-Records carry `status`, `executedAt`, `disbursedAmount`, `token`, `tokenDecimals` and `milestoneBreakdown`. Amounts here and in total-disbursed are in token base units — divide by 10^`tokenDecimals` (`25000000000` with 6 decimals is 25,000 USDC).
+Follow `pagination.hasNextPage` to the last page before concluding that a milestone has no disbursement. Records carry `status`, `executedAt`, `disbursedAmount`, `token`, `tokenDecimals` and `milestoneBreakdown`. Amounts here and in total-disbursed are in token base units — divide by 10^`tokenDecimals` (`25000000000` with 6 decimals is 25,000 USDC).
 
 ### Get Total Disbursed for a Grant
 
