@@ -654,7 +654,7 @@ curl -s "${BASE_URL}${PATH_AND_QUERY}" \
 
 ### Reviewer Inbox
 
-`GET /v2/funding-applications/community/${COMMUNITY_UID_OR_SLUG}/reviewer-inbox` — the reviewer's whole queue in one community: applications to review **and** milestones to verify, across every program.
+`GET /v2/funding-applications/community/${COMMUNITY_UID_OR_SLUG}/reviewer-inbox` — the caller's queue in one community: applications to review **and** milestones to verify, across every program. A reviewer gets only the items they are assigned to; a community admin gets everything in the community.
 
 | Param | Values |
 |-------|--------|
@@ -663,6 +663,7 @@ curl -s "${BASE_URL}${PATH_AND_QUERY}" \
 | `projectUid` | Limit to one project |
 | `status` | `pending`, `under_review`, `approved`, `rejected`, `revision_requested`, `resubmitted`, `withdrawn` |
 | `search` | Free text |
+| `attention` | Applications: `pending_review`, `under_review`, `revision_requested`, `kyb_pending`, `agreement_pending`, `paperwork_pending`. Milestones: `past_due`, `awaiting_review`, `awaiting_invoice`, `invoice_unpaid`, `followup_due` |
 | `pendingActionItems` | `true`, `false` |
 | `inboxSort` | `priority`, `follow_up_date` |
 | `reviewerAddress` | Community admins only: view another reviewer's inbox |
@@ -672,7 +673,7 @@ Response: `{ items, pagination, stats }`. Each item has `kind`, `bucket` (`actio
 
 Start here for "what do I need to review" — then drill into one item with the reads below.
 
-**An empty inbox is not "nothing to review".** A reviewer with no items in the inbox can still read every application of the programs they review. When `items` is empty, fall back to listing each reviewer program's applications (section 3) and its milestones waiting verification (section 8, with `programIds`), and say that nothing is in their own queue.
+**An empty inbox is not "nothing to review".** It means nothing is assigned to this reviewer — they can still read every application of the programs they review. When `items` is empty, say that nothing is assigned to them, then offer each reviewer program's applications (section 3) and its milestones waiting verification (section 8, with `programIds`).
 
 **Programs the key does not review** return the public view from the application list: applicant email, owner address and private fields come back blank, and programs with private applications return an empty list. Do not present that as the full picture — check `my-reviewer-programs` first.
 
