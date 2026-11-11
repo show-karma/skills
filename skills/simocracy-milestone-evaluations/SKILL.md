@@ -65,7 +65,7 @@ The endpoints take a reference number (`APP-XXXXXXXX-XXXXXX`, also found in Karm
 
 **Program by name** — who the key holder is decides where the program shows up, so walk this ladder and stop at the first level that yields a match; access itself is enforced server-side (403), the ladder only finds the id:
 
-1. Programs they review: `GET /v2/funding-program-configs/my-reviewer-programs` → `programId`, `name`, `communitySlug`, `communityName`. Empty for community admins and staff — that is expected, not an error.
+1. Programs they review: `GET /v2/funding-program-configs/my-reviewer-programs` → `programId`, `name`, `communitySlug`, `communityName`. Empty for community admins and staff who were never added as a reviewer — that is expected, not an error.
 2. Communities they administer: `GET /v2/user/communities/admin` → for each community, `GET /v2/communities/{slug}/programs` → `programId`, `name`.
 3. Anyone else (staff, or a community they named): if the community was not given, stop and ask for it — do not try ids you have seen elsewhere — then `GET /v2/communities/{slug}/programs`.
 
