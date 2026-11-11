@@ -279,7 +279,7 @@ Then for each community UID returned, call **List Community Programs** below.
 
 ### Get Program Financials
 
-Budget, committed (allocated) and disbursed totals in one call. Returns 404 for programs with no funding setup (e.g. form-only registry entries).
+Budget, committed (allocated) and disbursed totals in one call. Returns 404 for programs with no funding setup (e.g. form-only registry entries). This is the only source for program funding totals — do not sum the applications' `approvedAmount`, which is the intake-time approval and not what was allocated or disbursed.
 
 ```bash
 curl -s "${BASE_URL}/v2/programs/${PROGRAM_ID}/financials" \
@@ -806,6 +806,8 @@ curl -s "${BASE_URL}/v2/payouts/grant/${GRANT_UID}/history?page=1&limit=20" \
   -H "X-Source: skill:funding-program-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 1.0.0"
 ```
 
+Records carry `status`, `executedAt`, `disbursedAmount`, `token`, `tokenDecimals` and `milestoneBreakdown`. Amounts here and in total-disbursed are in token base units — divide by 10^`tokenDecimals` (`25000000000` with 6 decimals is 25,000 USDC).
+
 ### Get Total Disbursed for a Grant
 
 ```bash
@@ -838,9 +840,11 @@ curl -s "${BASE_URL}/v2/milestone-invoices/grant/${GRANT_UID}" \
   -H "X-Source: skill:funding-program-manager" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 1.2.0"
 ```
 
-Per-milestone invoice status (`not_submitted`, `received`, ...), payment status, and amounts. Related reads: `GET /v2/grants/${GRANT_UID}/invoice-requirement` and `GET /v2/funding-applications/${REFERENCE_NUMBER}/invoice-config`.
+Per-milestone invoice status (`not_submitted` → `submitted` → `received` → `paid`) and the manual `paymentStatusOverride`. These are workflow states set by admins — none of them proves money moved. Related reads: `GET /v2/grants/${GRANT_UID}/invoice-requirement` and `GET /v2/funding-applications/${REFERENCE_NUMBER}/invoice-config`.
 
-**Invoice processing time**: for paid invoices, compute `invoiceReceivedAt` -> the payout's `paymentStatusDate`; for invoices still unpaid, compute `invoiceReceivedAt` -> now (outstanding age), and label them as unpaid rather than processed. `invoiceSentAt` is a different lifecycle field and is often null — do not use it for processing-time questions.
+**Was it paid, and when?** Only payout records answer that: a payment happened when a record in the grant's payout history has `status` `DISBURSED` and an `executedAt`. `milestoneBreakdown` (milestone UID → amount) ties the payment to specific milestones; when it is null the disbursement is grant-level and settles every milestone of the grant. Invoices often stay at `received` after the money went out, and a milestone can be paid with no invoice at all — never derive payment dates or the pending-payout set from invoice fields.
+
+**Invoice processing time**: start at `invoiceSentAt`, falling back to `invoiceReceivedAt` when it is null; end at the disbursement's `executedAt`. For invoices with no disbursement yet, measure start → now and label them unpaid rather than processed.
 
 ---
 
@@ -964,7 +968,8 @@ curl -s -X POST "${BASE_URL}/v2/applications/${REFERENCE_NUMBER}/comments" \
 | "was this milestone evaluated" | Get milestone evaluation |
 | "project updates", "latest updates" | List the project's updates |
 | "milestone invoices", "unpaid invoices" | Milestone invoices for grant |
-| "invoice processing time", "invoices over N days" | Invoices received date vs payment date (see section 9) |
+| "invoice processing time", "invoices over N days" | Invoice sent date vs disbursement date (see section 9) |
+| "was this milestone paid", "when was it paid" | Payout history for the grant — never invoice status (see section 9) |
 | "create payout", "record disbursement" | Create disbursement record |
 | "payout history" | Get payout history for grant |
 | "total disbursed", "how much paid" | Get total disbursed |
