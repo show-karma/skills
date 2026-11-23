@@ -61,7 +61,18 @@
       "version": "0.6.0",
       "source": "./",
       "strict": false,
-      "tags": ["simocracy", "sim", "milestone", "evaluation", "reviewer"],
+      "tags": ["simocracy", "sim", "application", "milestone", "evaluation", "reviewer"],
+      "skills": [
+        "./skills/simocracy-evaluations"
+      ]
+    },
+    {
+      "name": "Simocracy Milestone Evaluations",
+      "description": "Deprecated: renamed to Simocracy Evaluations, which evaluates applications as well as milestones",
+      "version": "0.6.0",
+      "source": "./",
+      "strict": false,
+      "tags": ["simocracy", "deprecated"],
       "skills": [
         "./skills/simocracy-milestone-evaluations"
       ]
