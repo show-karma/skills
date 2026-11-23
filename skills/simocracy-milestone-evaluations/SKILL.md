@@ -159,6 +159,8 @@ curl -s -X POST "${BASE_URL}/v2/funding-applications/${REFERENCE_NUMBER}/integra
 
 Response `201`: `{ "verdictId": "…", "commentUri": "at://…", "revision": 1, "replaced": false, "status": "pending_review", "message": "…" }`. `replaced: true` means this Sim already had a verdict for this milestone (draft or published) and this POST became its next `revision`; reviewers see the earlier feedback marked as belonging to the previous revision. A published verdict stays live until the new revision is approved.
 
+The error body carries only `error` and `message`; the codes below name the case, the message says which one it is.
+
 | Status | Meaning | Action |
 |--------|---------|--------|
 | 403 | Key is not a reviewer/admin of this program | Stop |
@@ -226,7 +228,7 @@ curl -s -X POST "${BASE_URL}/v2/funding-applications/${REFERENCE_NUMBER}/integra
   -d '{"simUri":"<sims[].simUri>","text":"Recommend …"}'
 ```
 
-`text` is only the judgement (no headers, no Sim name): Karma labels it as the Sim's application evaluation itself. Response `201` has the same fields as section 4. Errors: 422 `application_not_submitted` → the application is still a draft, skip it; 422 `sim_not_in_council` → re-run 6a; 422 `publication_requires_reviewer` → never send `public`; 409 `verdict_key_collision` → report, do not retry; 403/404/503 as in section 4.
+`text` is only the judgement (no headers, no Sim name): Karma labels it as the Sim's application evaluation itself. Response `201` has the same fields as section 4. Errors (the body carries only `error` and `message`; tell the cases apart by the message): 422 saying the application is still a draft → skip it; 422 saying the Sim is not in the council → re-run 6a; 422 about `public` → never send it; 409 saying another verdict already maps to the record → report, do not retry; 403/404/503 as in section 4.
 
 Finish like section 4: counts (new vs new revision), skipped and failed Sims, the sentence **"These are private drafts on Karma. They reach Simocracy and the public application page only after a reviewer approves them."**, and the application link.
 
