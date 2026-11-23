@@ -1,16 +1,18 @@
 ---
 name: simocracy-milestone-evaluations
-description: Evaluate a Karma funding application's delivered milestones with the Simocracy Sims of its program and save each Sim's verdict on Karma as a private draft for reviewers to approve. Applications and programs can be named by reference number, id, project name or program name. Use when user says "evaluate milestones with the Sims", "run Sim milestone evaluation", "Sim review of milestone", "which milestones are ready for Sim evaluation", "milestone completion evaluation", "revise the Sim verdicts with the reviewer feedback", "show the pending Sim verdicts".
-version: 0.5.0
+description: Evaluate a Karma funding application, or its delivered milestones, with the Simocracy Sims of its program and save each Sim's verdict on Karma as a private draft for reviewers to approve. Applications and programs can be named by reference number, id, project name or program name. Use when user says "evaluate this application with the Sims", "run Sim application evaluation", "Sim review of application", "evaluate milestones with the Sims", "run Sim milestone evaluation", "Sim review of milestone", "which milestones are ready for Sim evaluation", "milestone completion evaluation", "revise the Sim verdicts with the reviewer feedback", "show the pending Sim verdicts".
+version: 0.6.0
 tags: [simocracy, sim, milestone, evaluation, application, reviewer]
 metadata:
   author: Karma
   category: program-admin
 ---
 
-# Simocracy Milestone Evaluations
+# Simocracy Evaluations: applications and milestones
 
-Lets the Sims of a program evaluate an application's delivered milestones. One `GET` returns everything a Sim may see (public application answers, completed milestones, the Sim council with each Sim's constitution and style, and any verdict already drafted with the reviewers' feedback); you judge each milestone as each Sim would, through its constitution and style, and `POST` the verdict back. Karma saves it as a **private draft** that only the program's reviewers, community admins and staff can see. Nothing reaches the Simocracy gathering, the applicant or the public application page until a person approves the verdict on Karma. This skill cannot publish. No Simocracy credentials are needed here.
+Lets the Sims of a program evaluate either **an application** (should this proposal be funded, sections 6) or **an application's delivered milestones** (does the work fulfil what was promised, sections 2–5). Each subject has one `GET` that returns everything a Sim may see (public application answers, the milestones when relevant, the Sim council with each Sim's constitution and style, and any verdict already drafted with the reviewers' feedback); you judge as each Sim would, through its constitution and style, and `POST` the verdict back. Karma saves it as a **private draft** that only the Sim's owner, community admins and staff can read. Nothing reaches the Simocracy gathering, the applicant or the public application page until a person approves the verdict on Karma. With an API key this skill cannot publish. No Simocracy credentials are needed here.
+
+**Which subject.** "Evaluate the application / the proposal / should we fund it" → section 6. "Evaluate the milestones / the delivery / milestone N" → sections 2–5. If the user only says "evaluate <project> with the Sims", ask which one. Never mix the two in one verdict: an application verdict says nothing about milestone delivery, a milestone verdict does not re-judge the application.
 
 Full API docs: `https://api.karmahq.org/v2/docs/static/index.html`
 
@@ -22,7 +24,7 @@ INVOCATION_ID=$(uuidgen)
 
 Parse JSON with `python3 -c` (always available); `jq` is not.
 
-**Two ways to reach the API.** Every call below is written as `curl` with an API key. If the Karma MCP connector is available instead, use its tools and skip the key: `call_karma_api` for every `GET`, `commit_write_karma_resource` for the two `POST`s (the draft in section 4 and the publish in section 4b), with the same `/v2/...` path and the same JSON body. The connector signs the call as the person who connected it, so it also covers what an API key cannot: publishing.
+**Two ways to reach the API.** Every call below is written as `curl` with an API key. If the Karma MCP connector is available instead, use its tools and skip the key: `call_karma_api` for every `GET`, `commit_write_karma_resource` for the `POST`s (drafts in sections 4 and 6c, publishing in sections 4b and 6d), with the same `/v2/...` path and the same JSON body. The connector signs the call as the person who connected it, so it also covers what an API key cannot: publishing.
 
 **CRITICAL: Every `curl` call must include these headers:**
 
@@ -30,7 +32,7 @@ Parse JSON with `python3 -c` (always available); `jq` is not.
 -H "x-api-key: ${API_KEY}"
 -H "X-Source: skill:simocracy-milestone-evaluations"
 -H "X-Invocation-Id: $INVOCATION_ID"
--H "X-Skill-Version: 0.5.0"
+-H "X-Skill-Version: 0.6.0"
 ```
 
 ---
@@ -42,7 +44,7 @@ If `KARMA_API_KEY` is already set, verify it works:
 ```bash
 curl -s "${BASE_URL}/v2/agent/info" \
   -H "x-api-key: ${API_KEY}" \
-  -H "X-Source: skill:simocracy-milestone-evaluations" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 0.5.0"
+  -H "X-Source: skill:simocracy-milestone-evaluations" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 0.6.0"
 ```
 
 If the response includes `supportedActions` → ready. If `KARMA_API_KEY` is not set and the Karma MCP connector is available, use the connector and skip this setup. Otherwise tell the user:
@@ -72,7 +74,7 @@ The endpoints take a reference number (`APP-XXXXXXXX-XXXXXX`, also found in Karm
 ```bash
 curl -s "${BASE_URL}/v2/funding-program-configs/my-reviewer-programs" \
   -H "x-api-key: ${API_KEY}" \
-  -H "X-Source: skill:simocracy-milestone-evaluations" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 0.5.0"
+  -H "X-Source: skill:simocracy-milestone-evaluations" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 0.6.0"
 ```
 
 Match the user's words against `name` (case-insensitive, partial is fine: "Batch 3" matches "Filecoin ProPGF Batch 3"). Keep `communitySlug`/`communityName` for the confirmation line. If the user already gave a program id, skip the ladder.
@@ -82,8 +84,10 @@ Match the user's words against `name` (case-insensitive, partial is fine: "Batch
 ```bash
 curl -s "${BASE_URL}/v2/funding-applications/program/${PROGRAM_ID}?status=approved&page=1&limit=100" \
   -H "x-api-key: ${API_KEY}" \
-  -H "X-Source: skill:simocracy-milestone-evaluations" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 0.5.0"
+  -H "X-Source: skill:simocracy-milestone-evaluations" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 0.6.0"
 ```
+
+For an **application evaluation** (section 6) drop `status=approved` from that query: any submitted application can be evaluated, usually `pending` or `under_review` ones. Skip `draft` applications (the applicant has not submitted yet).
 
 Follow `pagination.totalPages`. `resolvedProjectName` is the project's current title; when it is null, fall back to the applicant's own answer — the `applicationData` field whose key contains "project name". Take `referenceNumber` from the match. A project name without a program: resolve the program first from the reviewer list (ask which one if the key holder reviews several).
 
@@ -94,7 +98,7 @@ Confirm the resolution in one line before evaluating: `<project title> → <refe
 ```bash
 curl -s "${BASE_URL}/v2/funding-applications/${REFERENCE_NUMBER}/integrations/simocracy/milestone-evaluation-context" \
   -H "x-api-key: ${API_KEY}" \
-  -H "X-Source: skill:simocracy-milestone-evaluations" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 0.5.0"
+  -H "X-Source: skill:simocracy-milestone-evaluations" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 0.6.0"
 ```
 
 Response:
@@ -147,7 +151,7 @@ One call per milestone × Sim, milestone by milestone, Sims in alphabetical orde
 ```bash
 curl -s -X POST "${BASE_URL}/v2/funding-applications/${REFERENCE_NUMBER}/integrations/simocracy/milestone-evaluations" \
   -H "x-api-key: ${API_KEY}" -H "Content-Type: application/json" \
-  -H "X-Source: skill:simocracy-milestone-evaluations" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 0.5.0" \
+  -H "X-Source: skill:simocracy-milestone-evaluations" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 0.6.0" \
   -d '{"milestoneUid":"<milestones[].milestoneUid>","simUri":"<sims[].simUri>","text":"Verdict: …"}'
 ```
 
@@ -180,10 +184,59 @@ Response `200`: `{ "verdictId": "…", "commentUri": "at://…", "cid": "…", "
 ```bash
 curl -s "${BASE_URL}/v2/funding-applications/program/${PROGRAM_ID}?status=approved&page=1&limit=100" \
   -H "x-api-key: ${API_KEY}" \
-  -H "X-Source: skill:simocracy-milestone-evaluations" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 0.5.0"
+  -H "X-Source: skill:simocracy-milestone-evaluations" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 0.6.0"
 ```
 
 Use only `applications[].referenceNumber` from the listing (follow `pagination.totalPages`), then run sections 2–4 per reference. Applications with no completed milestones are skipped and listed in the final summary. Only approved applications have milestones.
+
+---
+
+## 6. Application evaluation
+
+One verdict per application × Sim: the Sim's judgement of the proposal itself, before or during review. Same draft, feedback, revision and publish rules as milestone verdicts; only the material and the endpoints change.
+
+### 6a. Load the context
+
+```bash
+curl -s "${BASE_URL}/v2/funding-applications/${REFERENCE_NUMBER}/integrations/simocracy/application-evaluation-context" \
+  -H "x-api-key: ${API_KEY}" \
+  -H "X-Source: skill:simocracy-milestone-evaluations" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 0.6.0"
+```
+
+Response: `referenceNumber`, `programId`, `projectName`, `status` (the application's review status), `gatheringUri`, `proposalUri` (`null` → stop, as in section 2), `application` (answers keyed by form label), `sims[]` (as in section 2) and `verdicts[]`, one entry per Sim that already has an application verdict, with the same fields and statuses as `milestones[].verdicts[]` in section 2. Empty `sims` → stop. Errors 401/403/404 as in section 2.
+
+**What to evaluate** follows the same rules as section 2, per Sim instead of per milestone × Sim: no entry → evaluate; `pending_review` without `down` on the current revision → skip; with `down` → revise; `published` or `dismissed` → only on request (or, for `dismissed`, when the feedback says what to change). Say which Sims you skip and why.
+
+### 6b. Evaluate: the application × each Sim
+
+Adopt each Sim's `constitution` and `style` verbatim and write that Sim's judgement of whether this proposal deserves funding from this program. The material is the application answers alone: the problem, the plan, the team, the milestones it proposes and the budget it asks for. As in section 3, the Sim's constitution decides what weighs; do not add criteria the Sim does not hold. The requested amount and the budget are part of the proposal, so a Sim may weigh them when its constitution cares about cost or value for money; no Sim invents a figure the application does not give.
+
+**Shape.** Prose in the Sim's voice, two or three paragraphs, 500–1,500 characters, no headings, no bullet lists. Open with `Recommend`, `Recommend with reservations` or `Do not recommend` and the reason in one sentence, then the argument as that Sim would make it. Never a numeric score, and never a funding amount of the Sim's own: application verdicts sit beside Karma's AI evaluation and the S-Process allocation and are merged with neither. Revising after feedback and learning from the whole feedback history work exactly as in section 3.
+
+Order Sims alphabetically. Show the full set and **ask whether to save it as drafts on Karma** before 6c; for a batch of applications ask once.
+
+### 6c. Save each verdict on Karma
+
+One call per Sim. Never send `public: true`.
+
+```bash
+curl -s -X POST "${BASE_URL}/v2/funding-applications/${REFERENCE_NUMBER}/integrations/simocracy/application-evaluations" \
+  -H "x-api-key: ${API_KEY}" -H "Content-Type: application/json" \
+  -H "X-Source: skill:simocracy-milestone-evaluations" -H "X-Invocation-Id: $INVOCATION_ID" -H "X-Skill-Version: 0.6.0" \
+  -d '{"simUri":"<sims[].simUri>","text":"Recommend …"}'
+```
+
+`text` is only the judgement (no headers, no Sim name): Karma labels it as the Sim's application evaluation itself. Response `201` has the same fields as section 4. Errors: 422 `application_not_submitted` → the application is still a draft, skip it; 422 `sim_not_in_council` → re-run 6a; 422 `publication_requires_reviewer` → never send `public`; 409 `verdict_key_collision` → report, do not retry; 403/404/503 as in section 4.
+
+Finish like section 4: counts (new vs new revision), skipped and failed Sims, the sentence **"These are private drafts on Karma. They reach Simocracy and the public application page only after a reviewer approves them."**, and the application link.
+
+### 6d. Publish (MCP connector only)
+
+Same rules as section 4b — explicit request naming the Sim, one confirmation (Sim, revision, that it becomes public on Simocracy and on the application page), re-read 6a first — with `commit_write_karma_resource` on `POST /v2/funding-applications/${REFERENCE_NUMBER}/integrations/simocracy/application-evaluations/<verdictId>/approve` and body `{"revision": <revision>}`. Responses and errors as in 4b; a 422 here means the application went back to draft, the Sim left the council or the gathering credential is unreadable.
+
+### 6e. Whole program
+
+List the program's applications without `status=approved` (section 1), skip `draft`, and run 6a–6c per reference. Ask the user whether to include already approved or rejected applications; by default evaluate `pending` and `under_review` only.
 
 ---
 
@@ -191,6 +244,10 @@ Use only `applications[].referenceNumber` from the listing (follow `pagination.t
 
 | User says | Action |
 |-----------|--------|
+| "evaluate APP-XXXX with the Sims" / "what would the Sims say about funding <project>" | Section 1 if named, then 6a–6c |
+| "revise the Sims' application verdicts for <project>" | Sections 1, 6a, then 6b–6c only for Sims with `down` feedback on their current revision |
+| "publish <Sim>'s application verdict for <project>" | Sections 1, 6a, then 6d (MCP connector only) |
+| "run the application evaluation for every pending application in <program>" | Section 1, then 6e |
 | "evaluate APP-XXXX's milestones with the Sims" | Sections 2–4 |
 | "evaluate IPNI's milestones in Batch 3" | Section 1 (program by name, then project by name), then 2–4 |
 | "which milestones of <project> are ready for Sim evaluation" | Sections 1–2 only; list `milestones[]` |
@@ -212,5 +269,8 @@ Use only `applications[].referenceNumber` from the listing (follow `pagination.t
 | Ladder exhausted with no match | Say which lists were searched and ask for the program id or community |
 | Posting fails mid-run | Post the remaining pairs, then report the failed ones |
 | The gathering later gets a new Sim | Re-run section 1; only the new Sim's verdicts are missing |
-| A reviewer asks why nothing shows on Simocracy | Drafts are private until approved on Karma; point them to the application's Integrations tab |
+| A reviewer asks why nothing shows on Simocracy | Drafts are private until approved on Karma; point them to the application's Simocracy tab |
+| The user says "evaluate <project>" without saying application or milestones | Ask which; never produce both unasked |
+| Application is still a `draft` | Not evaluable; say the applicant has not submitted it |
+| A Sim already judged the application in the S-Process round | Still write the application verdict; it is a separate, reviewed judgement and does not change the round |
 | The user asks the agent to publish or approve | With an API key: not possible, approval is a reviewer's click on Karma. Through the MCP connector: section 4b, on an explicit request, after confirming |
