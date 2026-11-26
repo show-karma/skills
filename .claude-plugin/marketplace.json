@@ -88,6 +88,18 @@
         "./skills/setup-agent",
         "./skills/manage-portfolio-reports"
       ]
+    },
+    {
+      "name": "Application Pre-Review",
+      "description": "Prepare a reviewer brief for a funding application: data checks on track record, funding and timeline, the concerns reviewers usually raise and the questions to ask the applicant. Read-only, no verdict",
+      "version": "0.1.0",
+      "source": "./",
+      "strict": false,
+      "tags": ["application", "reviewer", "review", "due-diligence"],
+      "skills": [
+        "./skills/setup-agent",
+        "./skills/application-pre-review"
+      ]
     }
   ]
 }
